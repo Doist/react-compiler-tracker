@@ -1,0 +1,38 @@
+{
+  "name": "@doist/react-compiler-tracker",
+  "version": "0.0.0",
+  "description": "A React Compiler violation tracker to help migrations and prevent regressions",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "react-compiler-tracker": "dist/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Doist/react-compiler-tracker.git"
+  },
+  "keywords": [
+    "react",
+    "react-compiler",
+    "eslint",
+    "memoization",
+    "performance"
+  ],
+  "author": "Doist Developers <dev@doist.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Doist/react-compiler-tracker/issues"
+  },
+  "homepage": "https://github.com/Doist/react-compiler-tracker#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
