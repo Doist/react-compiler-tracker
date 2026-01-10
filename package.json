@@ -14,7 +14,9 @@
     "fix": "run-p fix:* -c -l",
     "fix:biome": "biome check --write",
     "build": "tsc",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -44,12 +46,15 @@
     "*.{js,ts,mjs,mts,json,md}": "biome check --write --no-errors-on-unmatched"
   },
   "devDependencies": {
+    "@babel/core": "7.28.5",
     "@biomejs/biome": "2.3.11",
     "@types/node": "25.0.4",
+    "babel-plugin-react-compiler": "1.0.0",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "npm-run-all2": "8.0.4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.16"
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0",
