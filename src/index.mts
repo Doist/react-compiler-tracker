@@ -82,7 +82,7 @@ async function runOverwriteRecords() {
     }
 
     console.log(
-        `🔍 Checking all ${filePaths.length} source files for React Compiler errors and recreating records...`,
+        `🔍 Checking all ${filePaths.length} source files for React Compiler errors and recreating records…`,
     )
 
     //
@@ -138,7 +138,7 @@ async function runStageRecords() {
     }
 
     console.log(
-        `🔍 Checking ${filePaths.length} staged files for React Compiler errors and updating records...`,
+        `🔍 Checking ${filePaths.length} staged files for React Compiler errors and updating records…`,
     )
 
     //
@@ -189,7 +189,7 @@ async function runCheckFiles(filePathArgs: string[]) {
         return
     }
 
-    console.log(`🔍 Checking ${filePaths.length} files for React Compiler errors...`)
+    console.log(`🔍 Checking ${filePaths.length} files for React Compiler errors…`)
 
     //
     // Compile files and update `compilerErrors` with `customReactCompilerLogger`
@@ -221,7 +221,7 @@ async function runCheckAllFiles() {
         exitWithWarning('No files to check')
     }
 
-    console.log(`🔍 Checking all ${filePaths.length} source files for React Compiler errors...`)
+    console.log(`🔍 Checking all ${filePaths.length} source files for React Compiler errors…`)
 
     //
     // Compile files and update `compilerErrors` with `customReactCompilerLogger`
