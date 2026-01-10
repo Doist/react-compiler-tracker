@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
+import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
-import { join, relative } from 'path'
 import * as babel from './babel.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'

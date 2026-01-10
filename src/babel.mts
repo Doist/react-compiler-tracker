@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import {
     type ConfigAPI,
     type ConfigFunction,
@@ -5,8 +7,6 @@ import {
     transformFileAsync,
 } from '@babel/core'
 import type { Logger } from 'babel-plugin-react-compiler'
-import { createRequire } from 'module'
-import { join } from 'path'
 
 function loadConfig(configPath: string) {
     const require = createRequire(import.meta.url)
