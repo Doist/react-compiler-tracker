@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
     build-and-test:
-        runs-on: ubicloud
+        runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
             - name: Checkout repository
