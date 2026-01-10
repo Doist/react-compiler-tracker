@@ -50,5 +50,12 @@
     "lint-staged": "16.2.7",
     "npm-run-all2": "8.0.4",
     "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0",
+    "babel-plugin-react-compiler": "^1.0.0"
+  },
+  "dependencies": {
+    "glob": "^13.0.0"
   }
 }
