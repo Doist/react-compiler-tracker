@@ -3,12 +3,18 @@
   "version": "0.0.0",
   "description": "A React Compiler violation tracker to help migrations and prevent regressions",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "bin": {
-    "react-compiler-tracker": "dist/index.js"
+    "react-compiler-tracker": "dist/index.mjs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check": "run-p check:* -c -l",
+    "check:types": "tsc --noEmit",
+    "check:biome": "biome check",
+    "fix": "run-p fix:* -c -l",
+    "fix:biome": "biome check --write",
+    "build": "tsc",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -17,7 +23,6 @@
   "keywords": [
     "react",
     "react-compiler",
-    "eslint",
     "memoization",
     "performance"
   ],
@@ -34,5 +39,16 @@
     "dist",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "lint-staged": {
+    "*.{js,ts,mjs,mts,json,md}": "biome check --write --no-errors-on-unmatched"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11",
+    "@types/node": "25.0.4",
+    "husky": "9.1.7",
+    "lint-staged": "16.2.7",
+    "npm-run-all2": "8.0.4",
+    "typescript": "5.9.3"
+  }
 }
