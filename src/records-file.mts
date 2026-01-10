@@ -3,7 +3,7 @@
 import { execSync } from 'child_process'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 
-import * as reactCompiler from './react-compiler.mts'
+import * as reactCompiler from './react-compiler.mjs'
 
 const RECORD_VERSION = 1
 

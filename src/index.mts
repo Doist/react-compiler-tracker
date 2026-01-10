@@ -1,11 +1,11 @@
-/* eslint-disable no-console */
+#!/usr/bin/env node
 
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
 import { join, relative } from 'path'
-import * as babel from './babel.mts'
-import type { FileErrors } from './records-file.mts'
-import * as recordsFile from './records-file.mts'
-import * as sourceFiles from './source-files.mts'
+import * as babel from './babel.mjs'
+import type { FileErrors } from './records-file.mjs'
+import * as recordsFile from './records-file.mjs'
+import * as sourceFiles from './source-files.mjs'
 
 const RECORDS_PATH = '.react-compiler.rec.json'
 const SUPPORTED_FILE_EXTENSIONS = ['js', 'jsx', 'ts', 'tsx']
