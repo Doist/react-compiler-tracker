@@ -1,7 +1,6 @@
 import { execSync } from 'node:child_process'
 
 import { glob } from 'glob'
-import intersection from 'lodash/intersection'
 
 function getStagedFromGit({
     globPattern,
@@ -14,7 +13,9 @@ function getStagedFromGit({
 
     try {
         const output = execSync('git diff --cached --name-only', { encoding: 'utf8' })
-        const filePaths = intersection(output.trim().split('\n').filter(Boolean), allFilePaths)
+        const stagedFiles = output.trim().split('\n').filter(Boolean)
+        const allFilePathsSet = new Set(allFilePaths)
+        const filePaths = stagedFiles.filter((path) => allFilePathsSet.has(path))
 
         return filterSupportedFiles({ filePaths, supportedFileExtensions })
     } catch {
