@@ -31,3 +31,4 @@ npm-debug.log*
 
 # Claude
 .claude/plans/
+.claude/settings.local.json
