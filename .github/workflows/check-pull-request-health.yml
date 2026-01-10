@@ -1,4 +1,4 @@
-name: Build and test
+name: Check pull request health
 
 on: pull_request
 
