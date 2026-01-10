@@ -16,15 +16,7 @@ jobs:
                   cache: npm
                   node-version-file: .node-version
 
-            - name: Cache project 'node_modules' directory
-              id: node-modules-cache
-              uses: actions/cache@v4
-              with:
-                  key: node-modules-cache-${{ hashFiles('**/package-lock.json', '**/.node-version') }}
-                  path: node_modules/
-
             - name: Install project npm dependencies
-              if: ${{ steps.node-modules-cache.outputs.cache-hit != 'true' }}
               run: npm ci
 
             - run: npm run check
