@@ -1,10 +1,6 @@
 name: Publish @doist/react-compiler-tracker package
 
 on:
-    push:
-        tags:
-            - 'v*'
-    # triggered by `release-please.yml`
     workflow_dispatch:
 
 permissions:
