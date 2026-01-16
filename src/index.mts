@@ -10,7 +10,6 @@ import * as sourceFiles from './source-files.mjs'
 const RECORDS_PATH = '.react-compiler.rec.json'
 const SUPPORTED_FILE_EXTENSIONS = ['js', 'jsx', 'ts', 'tsx']
 const SOURCE_FILES = 'src/**/*.{js,jsx,ts,tsx}'
-const BABEL_CONFIG_PATH = 'babel.config.js'
 
 const OVERWRITE_FLAG = '--overwrite'
 const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
@@ -91,7 +90,6 @@ async function runOverwriteRecords() {
 
     await babel.compileFiles({
         filePaths,
-        configPath: BABEL_CONFIG_PATH,
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
@@ -147,7 +145,6 @@ async function runStageRecords() {
 
     await babel.compileFiles({
         filePaths,
-        configPath: BABEL_CONFIG_PATH,
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
@@ -197,7 +194,6 @@ async function runCheckFiles(filePathArgs: string[]) {
 
     await babel.compileFiles({
         filePaths: filePaths,
-        configPath: BABEL_CONFIG_PATH,
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
@@ -229,7 +225,6 @@ async function runCheckAllFiles() {
 
     await babel.compileFiles({
         filePaths,
-        configPath: BABEL_CONFIG_PATH,
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
