@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [1.1.0](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v1.0.1...react-compiler-tracker-v1.1.0) (2026-01-16)
+
+
+### Features
+
+* Drop requirement to have a user-provided babel config ([#15](https://github.com/Doist/react-compiler-tracker/issues/15)) ([82ecfd4](https://github.com/Doist/react-compiler-tracker/commit/82ecfd46aefe459aec2b8d5701ef9b35205737bd))
+
 ## [1.0.1](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v1.0.0...react-compiler-tracker-v1.0.1) (2026-01-12)
 
 
