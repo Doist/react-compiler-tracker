@@ -6,9 +6,11 @@ Designed to run as a part of Git hooks and CI, this tool helps prevent this and 
 
 ## Prerequisites
 
-This tool requires the React Compiler to be configured in your project using `babel.config.js`.
+This tool requires `babel-plugin-react-compiler` to be installed in your project:
 
-See the [React Compiler installation guide](https://react.dev/learn/react-compiler/installation#babel) for setup instructions.
+```bash
+npm install --save-dev babel-plugin-react-compiler
+```
 
 ## Installation
 

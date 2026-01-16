@@ -126,7 +126,11 @@ describe('load', () => {
         vi.mocked(existsSync).mockReturnValue(true)
         vi.mocked(readFileSync).mockReturnValue('not valid json')
 
+        vi.stubGlobal('console', { warn: vi.fn(), log: console.log })
+
         const result = load('/path/to/records.json')
+
+        vi.unstubAllGlobals()
 
         expect(result).toBeNull()
     })

@@ -1,41 +1,11 @@
-import { createRequire } from 'node:module'
-import { join } from 'node:path'
-import {
-    type ConfigAPI,
-    type ConfigFunction,
-    type TransformOptions,
-    transformFileAsync,
-} from '@babel/core'
+import { type TransformOptions, transformFileAsync } from '@babel/core'
 import type { Logger } from 'babel-plugin-react-compiler'
 
-function loadConfig(configPath: string) {
-    const require = createRequire(import.meta.url)
-    const babelConfigPath = join(process.cwd(), configPath)
-    const babelConfigFn: ConfigFunction = require(babelConfigPath)
-    const babelConfig = babelConfigFn({
-        cache: {
-            using: (callback) => callback(),
-        },
-    } as ConfigAPI)
-
-    return babelConfig
-}
-
-function setCustomReactCompilerLogger(
-    babelConfig: TransformOptions,
-    customReactCompilerLogger: Logger,
-) {
-    if (!babelConfig?.plugins) {
-        throw new Error('Failed to load Babel config')
+function createConfig(logger: Logger): TransformOptions {
+    return {
+        presets: [['@babel/preset-react', { runtime: 'automatic' }], '@babel/preset-typescript'],
+        plugins: [['babel-plugin-react-compiler', { logger }]],
     }
-
-    const reactCompilerPlugin = babelConfig.plugins.find(
-        (plugin) => Array.isArray(plugin) && plugin[0] === 'babel-plugin-react-compiler',
-    )
-    if (!reactCompilerPlugin || !Array.isArray(reactCompilerPlugin)) {
-        throw new Error('Failed to find React Compiler plugin in Babel config')
-    }
-    reactCompilerPlugin[1] = { ...reactCompilerPlugin[1], logger: customReactCompilerLogger }
 }
 
 async function compileFileWithBabel(filePath: string, config: TransformOptions) {
@@ -49,23 +19,13 @@ async function compileFileWithBabel(filePath: string, config: TransformOptions) 
 
 async function compileFiles({
     filePaths,
-    configPath,
     customReactCompilerLogger,
 }: {
     filePaths: string[]
-    configPath: string
     customReactCompilerLogger: Logger
 }) {
-    const config = loadConfig(configPath)
-    setCustomReactCompilerLogger(config, customReactCompilerLogger)
-
-    const processJobs: Promise<void>[] = []
-
-    for (const filePath of filePaths) {
-        processJobs.push(compileFileWithBabel(filePath, config))
-    }
-
-    await Promise.all(processJobs)
+    const config = createConfig(customReactCompilerLogger)
+    await Promise.all(filePaths.map((filePath) => compileFileWithBabel(filePath, config)))
 }
 
 export { compileFiles }
