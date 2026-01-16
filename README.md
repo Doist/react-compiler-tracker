@@ -52,14 +52,6 @@ npx @doist/react-compiler-tracker
 
 ## Integration Examples
 
-### Git Hook with Husky
-
-Add to `.husky/pre-commit`:
-
-```bash
-npx @doist/react-compiler-tracker --stage-record-file
-```
-
 ### lint-staged
 
 In `package.json`:
@@ -67,7 +59,7 @@ In `package.json`:
 ```json
 {
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx}": "npx @doist/react-compiler-tracker --check-files"
+    "src/**/*.{js,jsx,ts,tsx}": "npx @doist/react-compiler-tracker --stage-record-file"
   }
 }
 ```
