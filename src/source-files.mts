@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { relative } from 'node:path'
 import { glob } from 'glob'
+import { minimatch } from 'minimatch'
 
 function getAll({ globPattern }: { globPattern: string }) {
     return glob.sync(globPattern, {
@@ -63,4 +64,11 @@ function normalizeFilePaths(filePaths: string[]) {
     })
 }
 
-export { getAll, normalizeFilePaths }
+/**
+ * Filters file paths to only include those matching the glob pattern.
+ */
+function filterByGlob({ filePaths, globPattern }: { filePaths: string[]; globPattern: string }) {
+    return filePaths.filter((filePath) => minimatch(filePath, globPattern))
+}
+
+export { getAll, normalizeFilePaths, filterByGlob }

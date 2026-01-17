@@ -43,7 +43,10 @@ async function main() {
         switch (flag) {
             case STAGE_RECORD_FILE_FLAG: {
                 const filePathParams = process.argv.slice(3)
-                const filePaths = sourceFiles.normalizeFilePaths(filePathParams)
+                const filePaths = sourceFiles.filterByGlob({
+                    filePaths: sourceFiles.normalizeFilePaths(filePathParams),
+                    globPattern: config.sourceGlob,
+                })
 
                 return await runStageRecords({
                     filePaths,
@@ -58,7 +61,10 @@ async function main() {
             }
             case CHECK_FILES_FLAG: {
                 const filePathParams = process.argv.slice(3)
-                const filePaths = sourceFiles.normalizeFilePaths(filePathParams)
+                const filePaths = sourceFiles.filterByGlob({
+                    filePaths: sourceFiles.normalizeFilePaths(filePathParams),
+                    globPattern: config.sourceGlob,
+                })
 
                 return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
             }

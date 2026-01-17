@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { glob } from 'glob'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getAll, normalizeFilePaths } from './source-files.mjs'
+import { filterByGlob, getAll, normalizeFilePaths } from './source-files.mjs'
 
 vi.mock('node:child_process', () => ({
     execSync: vi.fn(),
@@ -121,5 +121,34 @@ describe('normalizeFilePaths', () => {
         const result = normalizeFilePaths([`${cwd}/src/App.tsx`, 'src/local.ts'])
 
         expect(result).toEqual(['src/App.tsx', 'src/local.ts'])
+    })
+})
+
+describe('filterByGlob', () => {
+    it('filters paths matching the glob pattern', () => {
+        const result = filterByGlob({
+            filePaths: ['src/App.tsx', 'src/utils.ts', 'package.json', 'README.md'],
+            globPattern: 'src/**/*.{ts,tsx}',
+        })
+
+        expect(result).toEqual(['src/App.tsx', 'src/utils.ts'])
+    })
+
+    it('returns empty array when no paths match', () => {
+        const result = filterByGlob({
+            filePaths: ['package.json', 'README.md'],
+            globPattern: 'src/**/*.{ts,tsx}',
+        })
+
+        expect(result).toEqual([])
+    })
+
+    it('returns all paths when all match', () => {
+        const result = filterByGlob({
+            filePaths: ['src/a.ts', 'src/b.tsx'],
+            globPattern: 'src/**/*.{ts,tsx}',
+        })
+
+        expect(result).toEqual(['src/a.ts', 'src/b.tsx'])
     })
 })
