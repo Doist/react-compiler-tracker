@@ -131,7 +131,7 @@ With lint-staged, the matched files are automatically passed as arguments to the
 ```bash
 #!/bin/sh
 # Get staged files and pass them to the tracker
-FILES=$(git diff --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
+FILES=$(git diff --diff-filter=ACMR --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
 if [ -n "$FILES" ]; then
   npx @doist/react-compiler-tracker --stage-record-file $FILES
 fi
