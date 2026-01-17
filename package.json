@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/Doist/react-compiler-tracker#readme",
   "engines": {
-    "node": ">=22"
+    "node": "^22.22.0 || >=24.13.0"
   },
   "files": [
     "dist",
