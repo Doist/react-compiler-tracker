@@ -40,7 +40,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "lint-staged": {
     "*.{js,ts,mjs,mts,json,md}": "biome check --write --no-errors-on-unmatched"
