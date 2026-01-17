@@ -1,10 +1,15 @@
 import { execSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { glob } from 'glob'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { filterByGlob, getAll, normalizeFilePaths } from './source-files.mjs'
+import { filterByGlob, getAll, normalizeFilePaths, validateFilesExist } from './source-files.mjs'
 
 vi.mock('node:child_process', () => ({
     execSync: vi.fn(),
+}))
+
+vi.mock('node:fs', () => ({
+    existsSync: vi.fn(),
 }))
 
 vi.mock('glob', () => ({
@@ -150,5 +155,29 @@ describe('filterByGlob', () => {
         })
 
         expect(result).toEqual(['src/a.ts', 'src/b.tsx'])
+    })
+})
+
+describe('validateFilesExist', () => {
+    it('throws error when file does not exist', () => {
+        vi.mocked(existsSync).mockReturnValue(false)
+
+        expect(() => validateFilesExist(['nonexistent.tsx'])).toThrow(
+            'File not found: nonexistent.tsx',
+        )
+    })
+
+    it('does not throw when all files exist', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+
+        expect(() => validateFilesExist(['exists.tsx'])).not.toThrow()
+    })
+
+    it('throws on first missing file', () => {
+        vi.mocked(existsSync).mockImplementation((path) => path === 'exists.tsx')
+
+        expect(() => validateFilesExist(['exists.tsx', 'missing.tsx'])).toThrow(
+            'File not found: missing.tsx',
+        )
     })
 })

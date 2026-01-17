@@ -47,6 +47,7 @@ async function main() {
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
                 })
+                sourceFiles.validateFilesExist(filePaths)
 
                 return await runStageRecords({
                     filePaths,
@@ -65,6 +66,7 @@ async function main() {
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
                 })
+                sourceFiles.validateFilesExist(filePaths)
 
                 return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
             }

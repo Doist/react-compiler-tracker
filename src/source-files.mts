@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { relative } from 'node:path'
 import { glob } from 'glob'
 import { minimatch } from 'minimatch'
@@ -71,4 +72,16 @@ function filterByGlob({ filePaths, globPattern }: { filePaths: string[]; globPat
     return filePaths.filter((filePath) => minimatch(filePath, globPattern))
 }
 
-export { getAll, normalizeFilePaths, filterByGlob }
+/**
+ * Validates that all file paths exist on the filesystem.
+ * Throws an error if any file is not found.
+ */
+function validateFilesExist(filePaths: string[]) {
+    for (const filePath of filePaths) {
+        if (!existsSync(filePath)) {
+            throw new Error(`File not found: ${filePath}`)
+        }
+    }
+}
+
+export { getAll, normalizeFilePaths, filterByGlob, validateFilesExist }

@@ -54,6 +54,12 @@ describe('CLI', () => {
         expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
     })
 
+    it('errors when file does not exist', () => {
+        const output = runCLI(['--check-files', 'src/nonexistent-file.tsx'])
+
+        expect(output).toContain('File not found: src/nonexistent-file.tsx')
+    })
+
     it('accepts --overwrite flag', () => {
         const output = runCLI(['--overwrite'])
 
