@@ -4,7 +4,6 @@ import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
 import * as babel from './babel.mjs'
 import { loadConfig } from './config.mjs'
-import { normalizeFilePaths } from './git-utils.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
@@ -44,7 +43,7 @@ async function main() {
         switch (flag) {
             case STAGE_RECORD_FILE_FLAG: {
                 const filePathParams = process.argv.slice(3)
-                const filePaths = normalizeFilePaths(filePathParams)
+                const filePaths = sourceFiles.normalizeFilePaths(filePathParams)
 
                 return await runStageRecords({
                     filePaths,
@@ -59,7 +58,7 @@ async function main() {
             }
             case CHECK_FILES_FLAG: {
                 const filePathParams = process.argv.slice(3)
-                const filePaths = normalizeFilePaths(filePathParams)
+                const filePaths = sourceFiles.normalizeFilePaths(filePathParams)
 
                 return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
             }
