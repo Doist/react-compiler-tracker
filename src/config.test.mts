@@ -1,0 +1,64 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { DEFAULT_CONFIG, loadConfig } from './config.mjs'
+
+vi.mock('node:fs', () => ({
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+}))
+
+afterEach(() => {
+    vi.clearAllMocks()
+})
+
+describe('loadConfig', () => {
+    it('returns defaults when no config file exists', () => {
+        vi.mocked(existsSync).mockReturnValue(false)
+
+        const result = loadConfig()
+
+        expect(result).toEqual(DEFAULT_CONFIG)
+    })
+
+    it('loads and merges user config correctly', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+        vi.mocked(readFileSync).mockReturnValue(
+            JSON.stringify({
+                recordsFile: 'custom-records.json',
+                sourceGlob: 'app/**/*.{ts,tsx}',
+            }),
+        )
+
+        const result = loadConfig()
+
+        expect(result).toEqual({
+            recordsFile: 'custom-records.json',
+            sourceGlob: 'app/**/*.{ts,tsx}',
+        })
+    })
+
+    it('handles partial config (only some fields specified)', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+        vi.mocked(readFileSync).mockReturnValue(
+            JSON.stringify({
+                sourceGlob: 'packages/frontend/**/*.tsx',
+            }),
+        )
+
+        const result = loadConfig()
+
+        expect(result).toEqual({
+            recordsFile: DEFAULT_CONFIG.recordsFile,
+            sourceGlob: 'packages/frontend/**/*.tsx',
+        })
+    })
+
+    it('returns defaults when config file is invalid JSON', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+        vi.mocked(readFileSync).mockReturnValue('not valid json')
+
+        const result = loadConfig()
+
+        expect(result).toEqual(DEFAULT_CONFIG)
+    })
+})

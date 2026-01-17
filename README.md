@@ -6,7 +6,7 @@
 
 The [React Compiler](https://react.dev/learn/react-compiler) automatically memoizes your components, eliminating the need for `useCallback` and `useMemo`. However, certain code patterns cause the compiler to bail out. When this happens, your components lose automatic optimization, potentially causing performance regressions.
 
-Inspired by [esplint](https://github.com/hjylewis/esplint) and [react-compiler-marker](https://github.com/blazejkustra/react-compiler-marker), this tool tracks compiler errors in a `.react-compiler-tracker.json` file and integrates with Git hooks and CI to prevent new violations from being introduced.
+Inspired by [esplint](https://github.com/hjylewis/esplint) and [react-compiler-marker](https://github.com/blazejkustra/react-compiler-marker), this tool tracks compiler errors in a `.react-compiler.rec.json` file and integrates with Git hooks and CI to prevent new violations from being introduced.
 
 ## Prerequisites
 
@@ -22,23 +22,65 @@ npm install --save-dev babel-plugin-react-compiler
 npm install --save-dev @doist/react-compiler-tracker
 ```
 
+## Configuration
+
+Create a `.react-compiler-tracker.config.json` file in your project root to customize the tool's behavior:
+
+```json
+{
+    "recordsFile": ".react-compiler.rec.json",
+    "sourceGlob": "src/**/*.{js,jsx,ts,tsx}"
+}
+```
+
+All fields are optional. Default values are shown above.
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `recordsFile` | Path to the records file | `.react-compiler.rec.json` |
+| `sourceGlob` | Glob pattern for source files | `src/**/*.{js,jsx,ts,tsx}` |
+
+### Monorepo Usage
+
+In a monorepo, run the tool from your package directory. The config file and all paths are relative to where you run the command. The defaults typically work out of the box:
+
+```
+my-monorepo/
+├── packages/
+│   └── frontend/
+│       ├── .react-compiler-tracker.config.json  # Optional config
+│       ├── .react-compiler.rec.json             # Records file
+│       └── src/
+│           └── ...
+```
+
+If your source files are in a different location (e.g., `app/` instead of `src/`), customize the config:
+
+```json
+{
+    "sourceGlob": "app/**/*.{ts,tsx}"
+}
+```
+
 ## Usage
 
 ### `--overwrite`
 
-Regenerates the entire `.react-compiler-tracker.json` by scanning all supported source files (`src/**/*.{js,jsx,ts,tsx}`). Useful for initialization or picking up changes from skipped Git hooks.
+Regenerates the entire records file by scanning all source files matching `sourceGlob`. Useful for initialization or picking up changes from skipped Git hooks.
 
 ```bash
 npx @doist/react-compiler-tracker --overwrite
 ```
 
-### `--stage-record-file`
+### `--stage-record-file <file1> <file2> ...`
 
-Checks Git staged files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates `.react-compiler-tracker.json` for staged files.
+Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files.
 
 ```bash
-npx @doist/react-compiler-tracker --stage-record-file
+npx @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
 ```
+
+If no files are provided, exits cleanly with a success message.
 
 ### `--check-files <file1> <file2> ...`
 
@@ -50,7 +92,7 @@ npx @doist/react-compiler-tracker --check-files src/components/Button.tsx src/ho
 
 ### No flags
 
-Checks all supported source files and reports the total error count. The records file is **not** updated in this mode.
+Checks all source files matching `sourceGlob` and reports the total error count. The records file is **not** updated in this mode.
 
 ```bash
 npx @doist/react-compiler-tracker
@@ -65,10 +107,12 @@ In `package.json`:
 ```json
 {
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx}": "npx @doist/react-compiler-tracker --stage-record-file"
+    "*.{js,jsx,ts,tsx}": "npx @doist/react-compiler-tracker --stage-record-file"
   }
 }
 ```
+
+With lint-staged, the matched files are automatically passed as arguments to the command.
 
 ### GitHub Actions CI
 
@@ -80,6 +124,17 @@ In `package.json`:
     if [ -n "$FILES" ]; then
       npx @doist/react-compiler-tracker --check-files $FILES
     fi
+```
+
+### Pre-commit hook (manual)
+
+```bash
+#!/bin/sh
+# Get staged files and pass them to the tracker
+FILES=$(git diff --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
+if [ -n "$FILES" ]; then
+  npx @doist/react-compiler-tracker --stage-record-file $FILES
+fi
 ```
 
 ## License
