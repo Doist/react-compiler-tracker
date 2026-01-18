@@ -73,4 +73,11 @@ describe('loadConfig', () => {
 
         expect(() => loadConfig()).toThrow('Invalid config file')
     })
+
+    it('throws when config file contains an array instead of object', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify([{ recordsFile: 'records.json' }]))
+
+        expect(() => loadConfig()).toThrow('Invalid config file')
+    })
 })

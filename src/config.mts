@@ -14,7 +14,7 @@ const DEFAULT_CONFIG: Config = {
 const CONFIG_FILE_NAME = '.react-compiler-tracker.config.json'
 
 function isValidConfig(config: unknown): config is Partial<Config> {
-    if (typeof config !== 'object' || config === null) {
+    if (typeof config !== 'object' || config === null || Array.isArray(config)) {
         return false
     }
     const obj = config as Record<string, unknown>
