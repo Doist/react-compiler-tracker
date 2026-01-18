@@ -6,7 +6,7 @@
 
 The [React Compiler](https://react.dev/learn/react-compiler) automatically memoizes your components, eliminating the need for `useCallback` and `useMemo`. However, certain code patterns cause the compiler to bail out. When this happens, your components lose automatic optimization, potentially causing performance regressions.
 
-Designed for Git hooks and CI, this tool tracks compiler errors in a `.react-compiler-tracker.json` file and prevents regressions by warning when new violations are introduced.
+Inspired by [esplint](https://github.com/hjylewis/esplint) and [react-compiler-marker](https://github.com/blazejkustra/react-compiler-marker), this tool tracks compiler errors in a `.react-compiler-tracker.json` file and integrates with Git hooks and CI to prevent new violations from being introduced.
 
 ## Prerequisites
 
