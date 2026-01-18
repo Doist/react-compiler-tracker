@@ -3,20 +3,16 @@
 import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
 import * as babel from './babel.mjs'
+import { loadConfig } from './config.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
-
-const RECORDS_PATH = '.react-compiler.rec.json'
-const SUPPORTED_FILE_EXTENSIONS = ['js', 'jsx', 'ts', 'tsx']
-const SOURCE_FILES = 'src/**/*.{js,jsx,ts,tsx}'
 
 const OVERWRITE_FLAG = '--overwrite'
 const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
 const CHECK_FILES_FLAG = '--check-files'
 
 const compilerErrors: Map<string, FileErrors> = new Map()
-const recordsFilePath = join(process.cwd(), RECORDS_PATH)
 
 const customReactCompilerLogger: ReactCompilerLogger = {
     logEvent: (filename, event) => {
@@ -39,24 +35,44 @@ const customReactCompilerLogger: ReactCompilerLogger = {
 main().catch(console.error)
 
 async function main() {
+    const config = loadConfig()
+
     try {
         const flag = process.argv[2]
 
         switch (flag) {
-            case STAGE_RECORD_FILE_FLAG:
-                await runStageRecords()
-                break
-            case OVERWRITE_FLAG:
-                await runOverwriteRecords()
-                break
-            case CHECK_FILES_FLAG:
-                {
-                    const filePaths = process.argv.slice(3)
-                    await runCheckFiles(filePaths)
-                }
-                break
-            default:
-                await runCheckAllFiles()
+            case STAGE_RECORD_FILE_FLAG: {
+                const filePathParams = process.argv.slice(3)
+                const filePaths = sourceFiles.filterByGlob({
+                    filePaths: sourceFiles.normalizeFilePaths(filePathParams),
+                    globPattern: config.sourceGlob,
+                })
+                sourceFiles.validateFilesExist(filePaths)
+
+                return await runStageRecords({
+                    filePaths,
+                    recordsFilePath: config.recordsFile,
+                })
+            }
+            case OVERWRITE_FLAG: {
+                return await runOverwriteRecords({
+                    sourceGlob: config.sourceGlob,
+                    recordsFilePath: config.recordsFile,
+                })
+            }
+            case CHECK_FILES_FLAG: {
+                const filePathParams = process.argv.slice(3)
+                const filePaths = sourceFiles.filterByGlob({
+                    filePaths: sourceFiles.normalizeFilePaths(filePathParams),
+                    globPattern: config.sourceGlob,
+                })
+                sourceFiles.validateFilesExist(filePaths)
+
+                return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
+            }
+            default: {
+                return await runCheckAllFiles({ sourceGlob: config.sourceGlob })
+            }
         }
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -70,10 +86,15 @@ async function main() {
 /**
  * Handles the `--overwrite` flag by re-recording errors across all files.
  */
-async function runOverwriteRecords() {
+async function runOverwriteRecords({
+    sourceGlob,
+    recordsFilePath,
+}: {
+    sourceGlob: string
+    recordsFilePath: string
+}) {
     const filePaths = sourceFiles.getAll({
-        globPattern: SOURCE_FILES,
-        supportedFileExtensions: SUPPORTED_FILE_EXTENSIONS,
+        globPattern: sourceGlob,
     })
 
     if (!filePaths.length) {
@@ -120,23 +141,24 @@ async function runOverwriteRecords() {
 }
 
 /**
- * Handles the `--stage-record-file` flag by checking git staged files and updating the records file.
+ * Handles the `--stage-record-file` flag by checking provided files and updating the records file.
  *
  * If errors have increased, the process will exit with code 1 and the records file will not be updated.
  */
-async function runStageRecords() {
-    const filePaths = sourceFiles.getStagedFromGit({
-        globPattern: SOURCE_FILES,
-        supportedFileExtensions: SUPPORTED_FILE_EXTENSIONS,
-    })
-
+async function runStageRecords({
+    filePaths,
+    recordsFilePath,
+}: {
+    filePaths: string[]
+    recordsFilePath: string
+}) {
     if (!filePaths.length) {
-        console.log('✅ No staged files to check')
+        console.log('✅ No files to check')
         return
     }
 
     console.log(
-        `🔍 Checking ${filePaths.length} staged files for React Compiler errors and updating records…`,
+        `🔍 Checking ${filePaths.length} files for React Compiler errors and updating records…`,
     )
 
     //
@@ -148,7 +170,7 @@ async function runStageRecords() {
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    const records = exitIfErrorsIncreased({ filePaths })
+    const records = exitIfErrorsIncreased({ filePaths, recordsFilePath })
 
     //
     // Update and stage records file
@@ -161,13 +183,15 @@ async function runStageRecords() {
         records: records?.files ?? null,
     })
 
+    const recordsFileRelativePath = join(process.cwd(), recordsFilePath)
+
     try {
-        recordsFile.stage(RECORDS_PATH)
+        recordsFile.stage(recordsFileRelativePath)
     } catch {
-        exitWithWarning(`Failed to stage records file at ${RECORDS_PATH}`)
+        exitWithWarning(`Failed to stage records file at ${recordsFileRelativePath}`)
     }
 
-    console.log('✅ No new React Compiler errors in staged files')
+    console.log('✅ No new React Compiler errors')
 }
 
 /**
@@ -175,12 +199,13 @@ async function runStageRecords() {
  *
  * If errors have increased, the process will exit with code 1.
  */
-async function runCheckFiles(filePathArgs: string[]) {
-    const filePaths = sourceFiles.filterSupportedFiles({
-        filePaths: filePathArgs,
-        supportedFileExtensions: SUPPORTED_FILE_EXTENSIONS,
-    })
-
+async function runCheckFiles({
+    filePaths,
+    recordsFilePath,
+}: {
+    filePaths: string[]
+    recordsFilePath: string
+}) {
     if (!filePaths.length) {
         console.log('✅ No files to check')
         return
@@ -197,7 +222,7 @@ async function runCheckFiles(filePathArgs: string[]) {
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    exitIfErrorsIncreased({ filePaths })
+    exitIfErrorsIncreased({ filePaths, recordsFilePath })
 
     console.log('✅ No new React Compiler errors in checked files')
 }
@@ -207,10 +232,9 @@ async function runCheckFiles(filePathArgs: string[]) {
  *
  * The records file is not updated.
  */
-async function runCheckAllFiles() {
+async function runCheckAllFiles({ sourceGlob }: { sourceGlob: string }) {
     const filePaths = sourceFiles.getAll({
-        globPattern: SOURCE_FILES,
-        supportedFileExtensions: SUPPORTED_FILE_EXTENSIONS,
+        globPattern: sourceGlob,
     })
 
     if (!filePaths.length) {
@@ -254,7 +278,13 @@ function getErrorCount() {
  * Compare error changes between the existing records and errors captured during this session in `compilerErrors`.
  * If errors have increased, exit with an error message.
  */
-function exitIfErrorsIncreased({ filePaths }: { filePaths: string[] }) {
+function exitIfErrorsIncreased({
+    filePaths,
+    recordsFilePath,
+}: {
+    filePaths: string[]
+    recordsFilePath: string
+}) {
     const records = recordsFile.load(recordsFilePath)
     const errorIncreases = recordsFile.getErrorIncreases({
         filePaths,
