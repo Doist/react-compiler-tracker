@@ -38,8 +38,7 @@ function loadConfig(): Config {
         const configContent = readFileSync(configPath, 'utf8')
         const parsed: unknown = JSON.parse(configContent)
         if (!isValidConfig(parsed)) {
-            console.warn(`Invalid config file at ${configPath}, using defaults`)
-            return { ...DEFAULT_CONFIG }
+            throw new Error(`Invalid config file at ${configPath}`)
         }
 
         return {
@@ -47,8 +46,7 @@ function loadConfig(): Config {
             ...parsed,
         }
     } catch (error) {
-        console.warn(`Failed to parse config at ${configPath}, using defaults. Error: ${error}`)
-        return { ...DEFAULT_CONFIG }
+        throw new Error(`Failed to parse config at ${configPath}: ${error}`)
     }
 }
 

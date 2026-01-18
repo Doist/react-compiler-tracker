@@ -53,12 +53,24 @@ describe('loadConfig', () => {
         })
     })
 
-    it('returns defaults when config file is invalid JSON', () => {
+    it('throws when config file is invalid JSON', () => {
         vi.mocked(existsSync).mockReturnValue(true)
-        vi.mocked(readFileSync).mockReturnValue('not valid json')
+        // Trailing comma - a common mistake when editing JSON by hand
+        vi.mocked(readFileSync).mockReturnValue(`{
+            "recordsFile": ".react-compiler.rec.json",
+        }`)
 
-        const result = loadConfig()
+        expect(() => loadConfig()).toThrow('Failed to parse config')
+    })
 
-        expect(result).toEqual(DEFAULT_CONFIG)
+    it('throws when config has invalid field types', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+        vi.mocked(readFileSync).mockReturnValue(
+            JSON.stringify({
+                recordsFile: { path: '.react-compiler.rec.json' },
+            }),
+        )
+
+        expect(() => loadConfig()).toThrow('Invalid config file')
     })
 })
