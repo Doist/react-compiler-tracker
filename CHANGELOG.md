@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.0.1](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.0.0...react-compiler-tracker-v2.0.1) (2026-01-18)
+
+
+### Bug Fixes
+
+* **ci:** add scope to setup-node for npm registry publishing ([#23](https://github.com/Doist/react-compiler-tracker/issues/23)) ([8352f69](https://github.com/Doist/react-compiler-tracker/commit/8352f69a9646ef2e44662f432078b647396ca435))
+
 ## [2.0.0](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v1.1.0...react-compiler-tracker-v2.0.0) (2026-01-18)
 
 
