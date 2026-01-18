@@ -1,12 +1,16 @@
 name: Publish @doist/react-compiler-tracker package
 
 on:
+    # triggered by `release-please.yml`
     workflow_dispatch:
 
 permissions:
-    contents: read
-    packages: write
+    # Enable the use of OIDC for trusted publishing and npm provenance
     id-token: write
+    # Enable the use of GitHub Packages registry
+    packages: write
+    # Enable Release Please to publish a GitHub release
+    contents: read
 
 jobs:
     publish:
@@ -17,13 +21,11 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Prepare Node.js environment for GitHub Packages registry
+            - name: Prepare Node.js environment
               uses: actions/setup-node@v6
               with:
                   cache: npm
                   node-version-file: .node-version
-                  registry-url: https://npm.pkg.github.com/
-                  scope: '@doist'
 
             - name: Ensure npm 11.5.1 or later is installed
               run: npm install -g npm@latest
@@ -35,17 +37,27 @@ jobs:
             - run: npm run test
             - run: npm run build
 
+            # The Node.js environment is prepared based on the `.npmrc` file in the repo, which
+            # configures Doist scoped packages to use the public npm registry with OIDC
+            # authentication for the initial publish, after which we remove the Doist registry
+            # configuration, and prepare the Node.js environment for the GitHub Packages registry,
+            # providing a predictable release workflow for both registries.
+
+            - name: Publish package to public npm registry
+              run: npm publish
+
+            - name: Remove Doist registry configuration from `.npmrc`
+              run: npm config delete @doist:registry --location=project
+
+            - name: Prepare Node.js environment for GitHub Packages registry
+              uses: actions/setup-node@v6
+              with:
+                  cache: npm
+                  node-version-file: .node-version
+                  registry-url: https://npm.pkg.github.com/
+                  scope: '@doist'
+
             - name: Publish package to GitHub Packages registry
               run: npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Prepare Node.js environment for npm registry
-              uses: actions/setup-node@v6
-              with:
-                  node-version-file: .node-version
-                  registry-url: https://registry.npmjs.org/
-                  scope: '@doist'
-
-            - name: Publish package to npm registry
-              run: npm publish --access public --provenance
