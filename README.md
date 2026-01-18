@@ -1,8 +1,12 @@
 # React Compiler Tracker
 
-While it's safe to opt out of using memoization hooks such as `useCallback` and `useMemo` in code optimized by the [React Compiler](https://react.dev/learn/react-compiler), it is easy to introduce violations that cause the compiler to bail out, leading to performance issues when values are not memoized.
+[![npm version](https://img.shields.io/npm/v/@doist/react-compiler-tracker)](https://www.npmjs.com/package/@doist/react-compiler-tracker)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/node/v/@doist/react-compiler-tracker)](https://nodejs.org/)
 
-Designed to run as a part of Git hooks and CI, this tool helps prevent this and progressively adopt the React Compiler by tracking and warning against newly introduced compilation errors. It maintains a `.react-compiler-tracker.json` record file to track known compiler errors per file.
+The [React Compiler](https://react.dev/learn/react-compiler) automatically memoizes your components, eliminating the need for `useCallback` and `useMemo`. However, certain code patterns cause the compiler to bail out. When this happens, your components lose automatic optimization, potentially causing performance regressions.
+
+Inspired by [esplint](https://github.com/hjylewis/esplint) and [react-compiler-marker](https://github.com/blazejkustra/react-compiler-marker), this tool tracks compiler errors in a `.react-compiler-tracker.json` file and integrates with Git hooks and CI to prevent new violations from being introduced.
 
 ## Prerequisites
 

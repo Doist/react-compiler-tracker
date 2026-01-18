@@ -35,12 +35,13 @@
   },
   "homepage": "https://github.com/Doist/react-compiler-tracker#readme",
   "engines": {
-    "node": ">=22"
+    "node": "^22.22.0 || >=24.13.0"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "lint-staged": {
     "*.{js,ts,mjs,mts,json,md}": "biome check --write --no-errors-on-unmatched"
