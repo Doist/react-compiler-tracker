@@ -45,6 +45,7 @@ jobs:
               with:
                   node-version-file: .node-version
                   registry-url: https://registry.npmjs.org/
+                  scope: '@doist'
 
             - name: Publish package to npm registry
               run: npm publish --access public --provenance
