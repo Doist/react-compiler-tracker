@@ -46,7 +46,8 @@ function loadConfig(): Config {
             ...DEFAULT_CONFIG,
             ...parsed,
         }
-    } catch {
+    } catch (error) {
+        console.warn(`Failed to parse config at ${configPath}, using defaults. Error: ${error}`)
         return { ...DEFAULT_CONFIG }
     }
 }
