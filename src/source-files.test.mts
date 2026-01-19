@@ -192,6 +192,24 @@ describe('normalizeFilePaths', () => {
 
         expect(result).toEqual(['\\$id.tsx', 'file.tsx'])
     })
+
+    it('preserves mixed paths with both forward and back slashes', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Mixed paths are valid on Windows - backslash separators should be preserved
+        const result = normalizeFilePaths(['src/utils\\file.ts', 'src/components\\Button.tsx'])
+
+        expect(result).toEqual(['src/utils\\file.ts', 'src/components\\Button.tsx'])
+    })
+
+    it('unescapes special chars in mixed paths while preserving backslash separators', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Should unescape \$ (non-alphanumeric) but preserve \s in utils\subdir (alphanumeric)
+        const result = normalizeFilePaths(['src/utils\\subdir/route.\\$id.tsx'])
+
+        expect(result).toEqual(['src/utils\\subdir/route.$id.tsx'])
+    })
 })
 
 describe('filterByGlob', () => {

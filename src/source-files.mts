@@ -64,7 +64,12 @@ function normalizeFilePaths(filePaths: string[]) {
         // Only unescape shell-escaped characters for Unix-style paths (containing /).
         // Windows paths use \ as separator, so we preserve them to avoid corruption.
         // This handles Git Bash on Windows and Windows CI which use forward slashes.
-        const normalized = filePath.includes('/') ? filePath.replace(/\\(.)/g, '$1') : filePath
+        // We only unescape non-alphanumeric characters since shells don't escape letters/digits,
+        // but Windows separators are typically followed by alphanumeric directory names.
+        // This preserves mixed paths like src/utils\file.ts (valid on Windows).
+        const normalized = filePath.includes('/')
+            ? filePath.replace(/\\([^a-zA-Z0-9])/g, '$1')
+            : filePath
 
         // Handle absolute paths by converting to cwd-relative
         if (normalized.startsWith('/')) {
