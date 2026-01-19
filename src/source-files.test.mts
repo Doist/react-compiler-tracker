@@ -167,6 +167,31 @@ describe('normalizeFilePaths', () => {
 
         expect(result).toEqual(['src/route.$id.tsx'])
     })
+
+    it('preserves Windows-style paths with backslash separators', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src\\utils\\file.ts', 'src\\components\\Button.tsx'])
+
+        expect(result).toEqual(['src\\utils\\file.ts', 'src\\components\\Button.tsx'])
+    })
+
+    it('preserves Windows paths with $ in filename', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src\\$files.ts', 'src\\routes\\$id.tsx'])
+
+        expect(result).toEqual(['src\\$files.ts', 'src\\routes\\$id.tsx'])
+    })
+
+    it('does not unescape bare filenames without forward slashes', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Bare filenames without / are ambiguous, so we preserve them
+        const result = normalizeFilePaths(['\\$id.tsx', 'file.tsx'])
+
+        expect(result).toEqual(['\\$id.tsx', 'file.tsx'])
+    })
 })
 
 describe('filterByGlob', () => {

@@ -36,6 +36,10 @@ function getGitPrefix() {
  * (e.g., lint-staged) are relative to the repo root. This function converts
  * those paths to cwd-relative paths.
  *
+ * Shell escapes (e.g., \$ → $) are only applied to paths containing forward
+ * slashes, which indicates Unix-style paths. Paths using only backslashes
+ * (Windows native paths) are preserved to avoid corrupting path separators.
+ *
  * @example
  * // When cwd is apps/frontend/ (prefix is "apps/frontend/")
  * normalizeFilePaths(["apps/frontend/src/file.tsx"]) // => ["src/file.tsx"]
@@ -43,8 +47,11 @@ function getGitPrefix() {
  * // Absolute paths are converted to cwd-relative
  * normalizeFilePaths(["/Users/frankie/project/src/file.tsx"]) // => ["src/file.tsx"]
  *
- * // Shell-escaped characters are unescaped
+ * // Shell-escaped characters are unescaped (Unix-style paths)
  * normalizeFilePaths(["src/route.\\$id.tsx"]) // => ["src/route.$id.tsx"]
+ *
+ * // Windows-style paths are preserved (no forward slashes)
+ * normalizeFilePaths(["src\\utils\\file.ts"]) // => ["src\\utils\\file.ts"]
  *
  * // Paths that don't start with prefix are unchanged
  * normalizeFilePaths(["src/file.tsx"]) // => ["src/file.tsx"]
@@ -54,20 +61,22 @@ function normalizeFilePaths(filePaths: string[]) {
     const cwd = process.cwd()
 
     return filePaths.map((filePath) => {
-        // Unescape shell-escaped characters (e.g., \$ → $, \! → !)
-        const unescaped = filePath.replace(/\\(.)/g, '$1')
+        // Only unescape shell-escaped characters for Unix-style paths (containing /).
+        // Windows paths use \ as separator, so we preserve them to avoid corruption.
+        // This handles Git Bash on Windows and Windows CI which use forward slashes.
+        const normalized = filePath.includes('/') ? filePath.replace(/\\(.)/g, '$1') : filePath
 
         // Handle absolute paths by converting to cwd-relative
-        if (unescaped.startsWith('/')) {
-            return relative(cwd, unescaped)
+        if (normalized.startsWith('/')) {
+            return relative(cwd, normalized)
         }
 
         // Handle monorepo prefix stripping
-        if (prefix && unescaped.startsWith(prefix)) {
-            return unescaped.slice(prefix.length)
+        if (prefix && normalized.startsWith(prefix)) {
+            return normalized.slice(prefix.length)
         }
 
-        return unescaped
+        return normalized
     })
 }
 
