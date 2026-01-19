@@ -29,12 +29,16 @@ function getGitPrefix() {
 }
 
 /**
- * Normalizes file paths by converting absolute paths to cwd-relative
- * and stripping the git prefix when present.
+ * Normalizes file paths by unescaping shell-escaped characters, converting
+ * absolute paths to cwd-relative, and stripping the git prefix when present.
  *
  * When running from a package subdirectory in a monorepo, file paths from git
  * (e.g., lint-staged) are relative to the repo root. This function converts
  * those paths to cwd-relative paths.
+ *
+ * Shell escapes (e.g., \$ → $) are only applied to paths containing forward
+ * slashes, which indicates Unix-style paths. Paths using only backslashes
+ * (Windows native paths) are preserved to avoid corrupting path separators.
  *
  * @example
  * // When cwd is apps/frontend/ (prefix is "apps/frontend/")
@@ -42,6 +46,12 @@ function getGitPrefix() {
  *
  * // Absolute paths are converted to cwd-relative
  * normalizeFilePaths(["/Users/frankie/project/src/file.tsx"]) // => ["src/file.tsx"]
+ *
+ * // Shell-escaped characters are unescaped (Unix-style paths)
+ * normalizeFilePaths(["src/route.\\$id.tsx"]) // => ["src/route.$id.tsx"]
+ *
+ * // Windows-style paths are preserved (no forward slashes)
+ * normalizeFilePaths(["src\\utils\\file.ts"]) // => ["src\\utils\\file.ts"]
  *
  * // Paths that don't start with prefix are unchanged
  * normalizeFilePaths(["src/file.tsx"]) // => ["src/file.tsx"]
@@ -51,17 +61,27 @@ function normalizeFilePaths(filePaths: string[]) {
     const cwd = process.cwd()
 
     return filePaths.map((filePath) => {
+        // Only unescape shell-escaped characters for Unix-style paths (containing /).
+        // Windows paths use \ as separator, so we preserve them to avoid corruption.
+        // This handles Git Bash on Windows and Windows CI which use forward slashes.
+        // We only unescape non-alphanumeric characters since shells don't escape letters/digits,
+        // but Windows separators are typically followed by alphanumeric directory names.
+        // This preserves mixed paths like src/utils\file.ts (valid on Windows).
+        const normalized = filePath.includes('/')
+            ? filePath.replace(/\\([^a-zA-Z0-9])/g, '$1')
+            : filePath
+
         // Handle absolute paths by converting to cwd-relative
-        if (filePath.startsWith('/')) {
-            return relative(cwd, filePath)
+        if (normalized.startsWith('/')) {
+            return relative(cwd, normalized)
         }
 
         // Handle monorepo prefix stripping
-        if (prefix && filePath.startsWith(prefix)) {
-            return filePath.slice(prefix.length)
+        if (prefix && normalized.startsWith(prefix)) {
+            return normalized.slice(prefix.length)
         }
 
-        return filePath
+        return normalized
     })
 }
 

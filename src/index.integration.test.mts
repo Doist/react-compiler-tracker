@@ -36,7 +36,7 @@ describe('CLI', () => {
     it('runs check on all files when no flag provided', () => {
         const output = runCLI()
 
-        expect(output).toContain('🔍 Checking all 4 source files for React Compiler errors…')
+        expect(output).toContain('🔍 Checking all 5 source files for React Compiler errors…')
         expect(output).toContain('⚠️  Found 4 React Compiler issues across 2 files')
         expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
     })
@@ -60,11 +60,19 @@ describe('CLI', () => {
         expect(output).toContain('File not found: src/nonexistent-file.tsx')
     })
 
+    it('handles shell-escaped file paths with $ character', () => {
+        // Simulate what CI tools do when passing filenames with $ through shell variables
+        const output = runCLI(['--check-files', 'src/route.\\$param.tsx'])
+
+        expect(output).toContain('🔍 Checking 1 files for React Compiler errors…')
+        expect(output).not.toContain('File not found')
+    })
+
     it('accepts --overwrite flag', () => {
         const output = runCLI(['--overwrite'])
 
         expect(output).toContain(
-            '🔍 Checking all 4 source files for React Compiler errors and recreating records…',
+            '🔍 Checking all 5 source files for React Compiler errors and recreating records…',
         )
         expect(output).toContain(
             '✅ Records file completed. Found 4 total React Compiler issues across 2 files',
@@ -136,8 +144,8 @@ describe('CLI', () => {
 
             const output = runCLI()
 
-            // Should only find .tsx files (2 instead of 4)
-            expect(output).toContain('🔍 Checking all 2 source files for React Compiler errors…')
+            // Should only find .tsx files (3 instead of 5)
+            expect(output).toContain('🔍 Checking all 3 source files for React Compiler errors…')
         })
 
         it('uses custom recordsFile from config', () => {

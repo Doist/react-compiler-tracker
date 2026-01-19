@@ -127,6 +127,89 @@ describe('normalizeFilePaths', () => {
 
         expect(result).toEqual(['src/App.tsx', 'src/local.ts'])
     })
+
+    it('unescapes shell-escaped $ characters', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/route.\\$id.tsx', 'src/draft.\\$slug.tsx'])
+
+        expect(result).toEqual(['src/route.$id.tsx', 'src/draft.$slug.tsx'])
+    })
+
+    it('unescapes shell-escaped spaces', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/file\\ with\\ spaces.tsx'])
+
+        expect(result).toEqual(['src/file with spaces.tsx'])
+    })
+
+    it('unescapes multiple different escape characters', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/route.\\$id\\ (copy).tsx'])
+
+        expect(result).toEqual(['src/route.$id (copy).tsx'])
+    })
+
+    it('handles paths with no escapes unchanged', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/normal-file.tsx'])
+
+        expect(result).toEqual(['src/normal-file.tsx'])
+    })
+
+    it('unescapes before stripping prefix', () => {
+        vi.mocked(execSync).mockReturnValue('apps/frontend/\n')
+
+        const result = normalizeFilePaths(['apps/frontend/src/route.\\$id.tsx'])
+
+        expect(result).toEqual(['src/route.$id.tsx'])
+    })
+
+    it('preserves Windows-style paths with backslash separators', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src\\utils\\file.ts', 'src\\components\\Button.tsx'])
+
+        expect(result).toEqual(['src\\utils\\file.ts', 'src\\components\\Button.tsx'])
+    })
+
+    it('preserves Windows paths with $ in filename', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src\\$files.ts', 'src\\routes\\$id.tsx'])
+
+        expect(result).toEqual(['src\\$files.ts', 'src\\routes\\$id.tsx'])
+    })
+
+    it('does not unescape bare filenames without forward slashes', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Bare filenames without / are ambiguous, so we preserve them
+        const result = normalizeFilePaths(['\\$id.tsx', 'file.tsx'])
+
+        expect(result).toEqual(['\\$id.tsx', 'file.tsx'])
+    })
+
+    it('preserves mixed paths with both forward and back slashes', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Mixed paths are valid on Windows - backslash separators should be preserved
+        const result = normalizeFilePaths(['src/utils\\file.ts', 'src/components\\Button.tsx'])
+
+        expect(result).toEqual(['src/utils\\file.ts', 'src/components\\Button.tsx'])
+    })
+
+    it('unescapes special chars in mixed paths while preserving backslash separators', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        // Should unescape \$ (non-alphanumeric) but preserve \s in utils\subdir (alphanumeric)
+        const result = normalizeFilePaths(['src/utils\\subdir/route.\\$id.tsx'])
+
+        expect(result).toEqual(['src/utils\\subdir/route.$id.tsx'])
+    })
 })
 
 describe('filterByGlob', () => {
