@@ -127,6 +127,46 @@ describe('normalizeFilePaths', () => {
 
         expect(result).toEqual(['src/App.tsx', 'src/local.ts'])
     })
+
+    it('unescapes shell-escaped $ characters', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/route.\\$id.tsx', 'src/draft.\\$slug.tsx'])
+
+        expect(result).toEqual(['src/route.$id.tsx', 'src/draft.$slug.tsx'])
+    })
+
+    it('unescapes shell-escaped spaces', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/file\\ with\\ spaces.tsx'])
+
+        expect(result).toEqual(['src/file with spaces.tsx'])
+    })
+
+    it('unescapes multiple different escape characters', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/route.\\$id\\ (copy).tsx'])
+
+        expect(result).toEqual(['src/route.$id (copy).tsx'])
+    })
+
+    it('handles paths with no escapes unchanged', () => {
+        vi.mocked(execSync).mockReturnValue('\n')
+
+        const result = normalizeFilePaths(['src/normal-file.tsx'])
+
+        expect(result).toEqual(['src/normal-file.tsx'])
+    })
+
+    it('unescapes before stripping prefix', () => {
+        vi.mocked(execSync).mockReturnValue('apps/frontend/\n')
+
+        const result = normalizeFilePaths(['apps/frontend/src/route.\\$id.tsx'])
+
+        expect(result).toEqual(['src/route.$id.tsx'])
+    })
 })
 
 describe('filterByGlob', () => {

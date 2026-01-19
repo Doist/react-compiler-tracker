@@ -29,8 +29,8 @@ function getGitPrefix() {
 }
 
 /**
- * Normalizes file paths by converting absolute paths to cwd-relative
- * and stripping the git prefix when present.
+ * Normalizes file paths by unescaping shell-escaped characters, converting
+ * absolute paths to cwd-relative, and stripping the git prefix when present.
  *
  * When running from a package subdirectory in a monorepo, file paths from git
  * (e.g., lint-staged) are relative to the repo root. This function converts
@@ -43,6 +43,9 @@ function getGitPrefix() {
  * // Absolute paths are converted to cwd-relative
  * normalizeFilePaths(["/Users/frankie/project/src/file.tsx"]) // => ["src/file.tsx"]
  *
+ * // Shell-escaped characters are unescaped
+ * normalizeFilePaths(["src/route.\\$id.tsx"]) // => ["src/route.$id.tsx"]
+ *
  * // Paths that don't start with prefix are unchanged
  * normalizeFilePaths(["src/file.tsx"]) // => ["src/file.tsx"]
  */
@@ -51,17 +54,20 @@ function normalizeFilePaths(filePaths: string[]) {
     const cwd = process.cwd()
 
     return filePaths.map((filePath) => {
+        // Unescape shell-escaped characters (e.g., \$ → $, \! → !)
+        const unescaped = filePath.replace(/\\(.)/g, '$1')
+
         // Handle absolute paths by converting to cwd-relative
-        if (filePath.startsWith('/')) {
-            return relative(cwd, filePath)
+        if (unescaped.startsWith('/')) {
+            return relative(cwd, unescaped)
         }
 
         // Handle monorepo prefix stripping
-        if (prefix && filePath.startsWith(prefix)) {
-            return filePath.slice(prefix.length)
+        if (prefix && unescaped.startsWith(prefix)) {
+            return unescaped.slice(prefix.length)
         }
 
-        return filePath
+        return unescaped
     })
 }
 
