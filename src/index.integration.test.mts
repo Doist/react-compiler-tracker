@@ -64,7 +64,7 @@ describe('CLI', () => {
         // Simulate what CI tools do when passing filenames with $ through shell variables
         const output = runCLI(['--check-files', 'src/route.\\$param.tsx'])
 
-        expect(output).toContain('🔍 Checking 1 files for React Compiler errors…')
+        expect(output).toContain('🔍 Checking 1 file for React Compiler errors…')
         expect(output).not.toContain('File not found')
     })
 
@@ -130,6 +130,56 @@ describe('CLI', () => {
             // The staging step may fail in test environment due to gitignore,
             // but the important thing is that error checking passed
             expect(output).not.toContain('React Compiler errors have increased')
+        })
+
+        it('removes deleted files from records', () => {
+            // First create records
+            runCLI(['--overwrite'])
+
+            // Manually add a fake entry to records simulating a previously tracked file
+            let records = JSON.parse(readFileSync(recordsPath, 'utf8'))
+            records.files['src/deleted-file.tsx'] = { CompileError: 2 }
+            writeFileSync(recordsPath, JSON.stringify(records, null, 2))
+
+            // Verify the fake entry is in records
+            records = JSON.parse(readFileSync(recordsPath, 'utf8'))
+            expect(records.files['src/deleted-file.tsx']).toEqual({ CompileError: 2 })
+
+            // Now run --stage-record-file with the deleted file path
+            // The file src/deleted-file.tsx doesn't exist, simulating deletion
+            const output = runCLI([
+                '--stage-record-file',
+                'src/good-component.tsx',
+                'src/deleted-file.tsx',
+            ])
+
+            // Should log the deleted file being removed
+            expect(output).toContain('🗑️  Removing 1 deleted file from records:')
+            expect(output).toContain('• src/deleted-file.tsx')
+            // Should check only existing files (1 file, not 2)
+            expect(output).toContain('🔍 Checking 1 file for React Compiler errors')
+            // Should not error on the deleted file
+            expect(output).not.toContain('File not found')
+
+            // Verify the deleted file was removed from records
+            records = JSON.parse(readFileSync(recordsPath, 'utf8'))
+            expect(records.files['src/deleted-file.tsx']).toBeUndefined()
+        })
+
+        it('exits cleanly when only deleted files provided', () => {
+            // First create records
+            runCLI(['--overwrite'])
+
+            // Run with only deleted files
+            const output = runCLI(['--stage-record-file', 'src/deleted1.tsx', 'src/deleted2.tsx'])
+
+            // Should log the deleted files being removed
+            expect(output).toContain('🗑️  Removing 2 deleted files from records:')
+            expect(output).toContain('• src/deleted1.tsx')
+            expect(output).toContain('• src/deleted2.tsx')
+            // Should show clear message when no existing files
+            expect(output).toContain('📁 No existing files to check.')
+            expect(output).not.toContain('File not found')
         })
     })
 

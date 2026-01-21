@@ -74,7 +74,7 @@ npx @doist/react-compiler-tracker --overwrite
 
 ### `--stage-record-file <file1> <file2> ...`
 
-Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files.
+Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files. Deleted files are automatically removed from the records.
 
 ```bash
 npx @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
@@ -84,7 +84,7 @@ If no files are provided, exits cleanly with a success message.
 
 ### `--check-files <file1> <file2> ...`
 
-Checks specific files without updating records. Exits with code 1 if checked files show increased error counts (or new errors). Primarily for CI to ensure PRs don't introduce new compiler errors.
+Checks specific files without updating records. Exits with code 1 if checked files show increased error counts (or new errors), or if any provided file does not exist. Primarily for CI to ensure PRs don't introduce new compiler errors.
 
 ```bash
 npx @doist/react-compiler-tracker --check-files src/components/Button.tsx src/hooks/useData.ts
@@ -130,8 +130,8 @@ With lint-staged, the matched files are automatically passed as arguments to the
 
 ```bash
 #!/bin/sh
-# Get staged files and pass them to the tracker
-FILES=$(git diff --diff-filter=ACMR --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
+# Get staged files (including deleted) and pass them to the tracker
+FILES=$(git diff --diff-filter=ACMRD --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
 if [ -n "$FILES" ]; then
   npx @doist/react-compiler-tracker --stage-record-file $FILES
 fi
