@@ -7,6 +7,7 @@ import { loadConfig } from './config.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
+import { pluralize } from './utils.mjs'
 
 const OVERWRITE_FLAG = '--overwrite'
 const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
@@ -165,7 +166,7 @@ async function runStageRecords({
     }
 
     if (deletedFilePaths.length > 0) {
-        const deletedFileWord = deletedFilePaths.length === 1 ? 'file' : 'files'
+        const deletedFileWord = pluralize(deletedFilePaths.length, 'file', 'files')
         const fileList = deletedFilePaths.map((f) => `  • ${f}`).join('\n')
         console.log(
             `🗑️  Removing ${deletedFilePaths.length} deleted ${deletedFileWord} from records:\n${fileList}`,
@@ -175,7 +176,7 @@ async function runStageRecords({
     if (!existingFilePaths.length) {
         console.log('📁 No existing files to check.')
     } else {
-        const fileWord = existingFilePaths.length === 1 ? 'file' : 'files'
+        const fileWord = pluralize(existingFilePaths.length, 'file', 'files')
         console.log(
             `🔍 Checking ${existingFilePaths.length} ${fileWord} for React Compiler errors and updating records…`,
         )
@@ -231,7 +232,7 @@ async function runCheckFiles({
         return
     }
 
-    const fileWord = filePaths.length === 1 ? 'file' : 'files'
+    const fileWord = pluralize(filePaths.length, 'file', 'files')
     console.log(`🔍 Checking ${filePaths.length} ${fileWord} for React Compiler errors…`)
 
     //
