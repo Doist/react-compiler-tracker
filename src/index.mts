@@ -191,7 +191,7 @@ async function runStageRecords({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    const records = exitIfErrorsIncreased({ filePaths: existingFilePaths, recordsFilePath })
+    const records = checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath })
 
     //
     // Update and stage records file (includes deleted files so they get removed from records)
@@ -244,7 +244,7 @@ async function runCheckFiles({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    exitIfErrorsIncreased({ filePaths, recordsFilePath })
+    checkErrorChanges({ filePaths, recordsFilePath })
 
     console.log('✅ No new React Compiler errors in checked files')
 }
@@ -299,8 +299,9 @@ function getErrorCount() {
 /**
  * Compare error changes between the existing records and errors captured during this session in `compilerErrors`.
  * If errors have increased, exit with an error message.
+ * If errors have decreased, report the good news.
  */
-function exitIfErrorsIncreased({
+function checkErrorChanges({
     filePaths,
     recordsFilePath,
 }: {
@@ -308,20 +309,28 @@ function exitIfErrorsIncreased({
     recordsFilePath: string
 }) {
     const records = recordsFile.load(recordsFilePath)
-    const errorIncreases = recordsFile.getErrorIncreases({
+    const { increases, decreases } = recordsFile.getErrorChanges({
         filePaths,
         existingRecords: records?.files ?? {},
         newRecords: Object.fromEntries(compilerErrors.entries()),
     })
 
-    const errorEntries = Object.entries(errorIncreases)
-
-    if (errorEntries.length) {
-        const errorList = errorEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
-
+    // Report increases (exit with error)
+    const increaseEntries = Object.entries(increases)
+    if (increaseEntries.length) {
+        const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
         exitWithError(
             `React Compiler errors have increased in:\r\n${errorList.join('\r\n')}\r\n\r\nPlease fix the errors and run the command again.`,
         )
+    }
+
+    // Report decreases (informational)
+    const decreaseEntries = Object.entries(decreases)
+    if (decreaseEntries.length) {
+        const decreaseList = decreaseEntries.map(
+            ([filePath, count]) => `  • ${filePath}: -${count}`,
+        )
+        console.log(`🎉 React Compiler errors have decreased in:\n${decreaseList.join('\n')}`)
     }
 
     return records
