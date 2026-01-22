@@ -145,20 +145,14 @@ describe('CLI', () => {
             records = JSON.parse(readFileSync(recordsPath, 'utf8'))
             expect(records.files['src/deleted-file.tsx']).toEqual({ CompileError: 2 })
 
-            // Now run --stage-record-file with the deleted file path
-            // The file src/deleted-file.tsx doesn't exist, simulating deletion
-            const output = runCLI([
-                '--stage-record-file',
-                'src/good-component.tsx',
-                'src/deleted-file.tsx',
-            ])
+            // Run --stage-record-file WITHOUT the deleted file in arguments
+            // (simulating lint-staged which doesn't pass deleted files)
+            // The tool should auto-detect that src/deleted-file.tsx no longer exists
+            const output = runCLI(['--stage-record-file', 'src/good-component.tsx'])
 
-            // Should log the deleted file being removed
             expect(output).toContain('🗑️  Removing 1 deleted file from records:')
             expect(output).toContain('• src/deleted-file.tsx')
-            // Should check only existing files (1 file, not 2)
             expect(output).toContain('🔍 Checking 1 file for React Compiler errors')
-            // Should not error on the deleted file
             expect(output).not.toContain('File not found')
 
             // Verify the deleted file was removed from records
