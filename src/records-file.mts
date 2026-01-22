@@ -46,34 +46,33 @@ function getErrorChanges({
     existingRecords: Records['files']
     newRecords: Records['files']
 }): ErrorChanges {
-    return filePaths.reduce<ErrorChanges>(
-        (changes, filePath) => {
-            const existingErrors = existingRecords[filePath]
-            const newErrors = newRecords[filePath]
+    const changes: ErrorChanges = { increases: {}, decreases: {} }
 
-            if (!existingErrors && !newErrors) {
-                return changes
-            }
+    for (const filePath of filePaths) {
+        const existingErrors = existingRecords[filePath]
+        const newErrors = newRecords[filePath]
 
-            const existingErrorCount = Object.values(existingErrors ?? {}).reduce(
-                (total, count) => total + count,
-                0,
-            )
-            const newErrorCount = Object.values(newErrors ?? {}).reduce(
-                (total, count) => total + count,
-                0,
-            )
+        if (!existingErrors && !newErrors) {
+            continue
+        }
 
-            if (newErrorCount > existingErrorCount) {
-                changes.increases[filePath] = newErrorCount - existingErrorCount
-            } else if (newErrorCount < existingErrorCount) {
-                changes.decreases[filePath] = existingErrorCount - newErrorCount
-            }
+        const existingErrorCount = Object.values(existingErrors ?? {}).reduce(
+            (total, count) => total + count,
+            0,
+        )
+        const newErrorCount = Object.values(newErrors ?? {}).reduce(
+            (total, count) => total + count,
+            0,
+        )
 
-            return changes
-        },
-        { increases: {}, decreases: {} },
-    )
+        if (newErrorCount > existingErrorCount) {
+            changes.increases[filePath] = newErrorCount - existingErrorCount
+        } else if (newErrorCount < existingErrorCount) {
+            changes.decreases[filePath] = existingErrorCount - newErrorCount
+        }
+    }
+
+    return changes
 }
 
 function save({
