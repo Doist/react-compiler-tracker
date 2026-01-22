@@ -329,7 +329,7 @@ function checkErrorChanges({
     if (increaseEntries.length) {
         const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
         exitWithError(
-            `React Compiler errors have increased in:\r\n${errorList.join('\r\n')}\r\n\r\nPlease fix the errors and run the command again.`,
+            `React Compiler errors have increased in:\n${errorList.join('\n')}\n\nPlease fix the errors and run the command again.`,
         )
     }
 
