@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getErrorIncreases, load, save } from './records-file.mjs'
+import { getErrorChanges, load, save } from './records-file.mjs'
 
 vi.mock('node:fs', () => ({
     existsSync: vi.fn(),
@@ -17,33 +17,19 @@ afterEach(() => {
     vi.clearAllMocks()
 })
 
-describe('getErrorIncreases', () => {
-    it('returns empty object when no errors in either records', () => {
-        const result = getErrorIncreases({
+describe('getErrorChanges', () => {
+    it('returns empty increases/decreases when no errors in either records', () => {
+        const result = getErrorChanges({
             filePaths: ['src/index.ts'],
             existingRecords: {},
             newRecords: {},
         })
 
-        expect(result).toEqual({})
-    })
-
-    it('returns empty object when new errors are less than or equal to existing', () => {
-        const result = getErrorIncreases({
-            filePaths: ['src/index.ts'],
-            existingRecords: {
-                'src/index.ts': { CompileError: 2 },
-            },
-            newRecords: {
-                'src/index.ts': { CompileError: 1 },
-            },
-        })
-
-        expect(result).toEqual({})
+        expect(result).toEqual({ increases: {}, decreases: {} })
     })
 
     it('detects increased errors for a file', () => {
-        const result = getErrorIncreases({
+        const result = getErrorChanges({
             filePaths: ['src/index.ts'],
             existingRecords: {
                 'src/index.ts': { CompileError: 1 },
@@ -53,11 +39,25 @@ describe('getErrorIncreases', () => {
             },
         })
 
-        expect(result).toEqual({ 'src/index.ts': 2 })
+        expect(result).toEqual({ increases: { 'src/index.ts': 2 }, decreases: {} })
+    })
+
+    it('detects decreased errors for a file', () => {
+        const result = getErrorChanges({
+            filePaths: ['src/index.ts'],
+            existingRecords: {
+                'src/index.ts': { CompileError: 5 },
+            },
+            newRecords: {
+                'src/index.ts': { CompileError: 2 },
+            },
+        })
+
+        expect(result).toEqual({ increases: {}, decreases: { 'src/index.ts': 3 } })
     })
 
     it('detects new errors for a file with no previous records', () => {
-        const result = getErrorIncreases({
+        const result = getErrorChanges({
             filePaths: ['src/index.ts'],
             existingRecords: {},
             newRecords: {
@@ -65,11 +65,23 @@ describe('getErrorIncreases', () => {
             },
         })
 
-        expect(result).toEqual({ 'src/index.ts': 2 })
+        expect(result).toEqual({ increases: { 'src/index.ts': 2 }, decreases: {} })
+    })
+
+    it('detects all errors fixed - file had errors, now has none', () => {
+        const result = getErrorChanges({
+            filePaths: ['src/index.ts'],
+            existingRecords: {
+                'src/index.ts': { CompileError: 3, CompileSkip: 2 },
+            },
+            newRecords: {},
+        })
+
+        expect(result).toEqual({ increases: {}, decreases: { 'src/index.ts': 5 } })
     })
 
     it('sums all error types when comparing', () => {
-        const result = getErrorIncreases({
+        const result = getErrorChanges({
             filePaths: ['src/index.ts'],
             existingRecords: {
                 'src/index.ts': { CompileError: 1, CompileSkip: 1 },
@@ -79,11 +91,11 @@ describe('getErrorIncreases', () => {
             },
         })
 
-        expect(result).toEqual({ 'src/index.ts': 3 })
+        expect(result).toEqual({ increases: { 'src/index.ts': 3 }, decreases: {} })
     })
 
     it('only checks files in the provided filePaths', () => {
-        const result = getErrorIncreases({
+        const result = getErrorChanges({
             filePaths: ['src/index.ts'],
             existingRecords: {
                 'src/other.ts': { CompileError: 0 },
@@ -93,7 +105,21 @@ describe('getErrorIncreases', () => {
             },
         })
 
-        expect(result).toEqual({})
+        expect(result).toEqual({ increases: {}, decreases: {} })
+    })
+
+    it('returns empty for unchanged error counts', () => {
+        const result = getErrorChanges({
+            filePaths: ['src/index.ts'],
+            existingRecords: {
+                'src/index.ts': { CompileError: 2 },
+            },
+            newRecords: {
+                'src/index.ts': { CompileError: 2 },
+            },
+        })
+
+        expect(result).toEqual({ increases: {}, decreases: {} })
     })
 })
 

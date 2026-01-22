@@ -32,7 +32,12 @@ function load(recordsPath: string) {
     return null
 }
 
-function getErrorIncreases({
+type ErrorChanges = {
+    increases: Record<string, number>
+    decreases: Record<string, number>
+}
+
+function getErrorChanges({
     filePaths,
     existingRecords,
     newRecords,
@@ -40,13 +45,15 @@ function getErrorIncreases({
     filePaths: string[]
     existingRecords: Records['files']
     newRecords: Records['files']
-}) {
-    return filePaths.reduce<Record<string, number>>((errorIncreases, filePath) => {
-        const existingErrors: FileErrors | undefined = existingRecords[filePath]
-        const newErrors: FileErrors | undefined = newRecords[filePath]
+}): ErrorChanges {
+    const changes: ErrorChanges = { increases: {}, decreases: {} }
+
+    for (const filePath of filePaths) {
+        const existingErrors = existingRecords[filePath]
+        const newErrors = newRecords[filePath]
 
         if (!existingErrors && !newErrors) {
-            return errorIncreases
+            continue
         }
 
         const existingErrorCount = Object.values(existingErrors ?? {}).reduce(
@@ -58,16 +65,14 @@ function getErrorIncreases({
             0,
         )
 
-        if (newErrorCount <= existingErrorCount) {
-            return errorIncreases
+        if (newErrorCount > existingErrorCount) {
+            changes.increases[filePath] = newErrorCount - existingErrorCount
+        } else if (newErrorCount < existingErrorCount) {
+            changes.decreases[filePath] = existingErrorCount - newErrorCount
         }
+    }
 
-        const newErrorIncreases = errorIncreases
-        newErrorIncreases[filePath] =
-            newErrorCount > existingErrorCount ? newErrorCount - existingErrorCount : 0
-
-        return newErrorIncreases
-    }, {})
+    return changes
 }
 
 function save({
@@ -117,4 +122,4 @@ function stage(recordsPath: string) {
     execSync(`git add ${recordsPath}`, { stdio: 'inherit' })
 }
 
-export { type FileErrors, getErrorIncreases, load, type Records, save, stage }
+export { type ErrorChanges, type FileErrors, getErrorChanges, load, type Records, save, stage }
