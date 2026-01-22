@@ -2,6 +2,18 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.1.0](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.0.3...react-compiler-tracker-v2.1.0) (2026-01-22)
+
+
+### Features
+
+* report error decreases in `--check-files` flag ([#36](https://github.com/Doist/react-compiler-tracker/issues/36)) ([7f18758](https://github.com/Doist/react-compiler-tracker/commit/7f18758a13af01531dd215ea35871d91874e1345))
+
+
+### Bug Fixes
+
+* remove deleted files from records file with `--stage-record-file` ([#34](https://github.com/Doist/react-compiler-tracker/issues/34)) ([34b00f8](https://github.com/Doist/react-compiler-tracker/commit/34b00f8cab91766c79fe6a11bc808d8d355a5bd0))
+
 ## [2.0.3](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.0.2...react-compiler-tracker-v2.0.3) (2026-01-19)
 
 
