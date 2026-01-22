@@ -315,6 +315,15 @@ function checkErrorChanges({
         newRecords: Object.fromEntries(compilerErrors.entries()),
     })
 
+    // Report decreases first so users see their progress even if there are also increases
+    const decreaseEntries = Object.entries(decreases)
+    if (decreaseEntries.length) {
+        const decreaseList = decreaseEntries.map(
+            ([filePath, count]) => `  • ${filePath}: -${count}`,
+        )
+        console.log(`🎉 React Compiler errors have decreased in:\n${decreaseList.join('\n')}`)
+    }
+
     // Report increases (exit with error)
     const increaseEntries = Object.entries(increases)
     if (increaseEntries.length) {
@@ -322,15 +331,6 @@ function checkErrorChanges({
         exitWithError(
             `React Compiler errors have increased in:\r\n${errorList.join('\r\n')}\r\n\r\nPlease fix the errors and run the command again.`,
         )
-    }
-
-    // Report decreases (informational)
-    const decreaseEntries = Object.entries(decreases)
-    if (decreaseEntries.length) {
-        const decreaseList = decreaseEntries.map(
-            ([filePath, count]) => `  • ${filePath}: -${count}`,
-        )
-        console.log(`🎉 React Compiler errors have decreased in:\n${decreaseList.join('\n')}`)
     }
 
     return records
