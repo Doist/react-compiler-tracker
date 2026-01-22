@@ -191,7 +191,7 @@ async function runStageRecords({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    const records = exitIfErrorsIncreased({ filePaths: allFilePaths, recordsFilePath })
+    const records = exitIfErrorsIncreased({ filePaths: existingFilePaths, recordsFilePath })
 
     //
     // Update and stage records file (includes deleted files so they get removed from records)
