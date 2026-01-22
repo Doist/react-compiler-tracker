@@ -7,6 +7,7 @@ import { loadConfig } from './config.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
+import { pluralize } from './utils.mjs'
 
 const OVERWRITE_FLAG = '--overwrite'
 const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
@@ -47,10 +48,12 @@ async function main() {
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
                 })
-                sourceFiles.validateFilesExist(filePaths)
+                const { existing, deleted } = sourceFiles.partitionByExistence(filePaths)
 
                 return await runStageRecords({
-                    filePaths,
+                    existingFilePaths: existing,
+                    allFilePaths: filePaths,
+                    deletedFilePaths: deleted,
                     recordsFilePath: config.recordsFile,
                 })
             }
@@ -144,40 +147,58 @@ async function runOverwriteRecords({
  * Handles the `--stage-record-file` flag by checking provided files and updating the records file.
  *
  * If errors have increased, the process will exit with code 1 and the records file will not be updated.
+ * Deleted files are automatically removed from the records.
  */
 async function runStageRecords({
-    filePaths,
+    existingFilePaths,
+    allFilePaths,
+    deletedFilePaths,
     recordsFilePath,
 }: {
-    filePaths: string[]
+    existingFilePaths: string[]
+    allFilePaths: string[]
+    deletedFilePaths: string[]
     recordsFilePath: string
 }) {
-    if (!filePaths.length) {
+    if (!allFilePaths.length) {
         console.log('✅ No files to check')
         return
     }
 
-    console.log(
-        `🔍 Checking ${filePaths.length} files for React Compiler errors and updating records…`,
-    )
+    if (deletedFilePaths.length > 0) {
+        const deletedFileWord = pluralize(deletedFilePaths.length, 'file', 'files')
+        const fileList = deletedFilePaths.map((f) => `  • ${f}`).join('\n')
+        console.log(
+            `🗑️  Removing ${deletedFilePaths.length} deleted ${deletedFileWord} from records:\n${fileList}`,
+        )
+    }
+
+    if (!existingFilePaths.length) {
+        console.log('📁 No existing files to check.')
+    } else {
+        const fileWord = pluralize(existingFilePaths.length, 'file', 'files')
+        console.log(
+            `🔍 Checking ${existingFilePaths.length} ${fileWord} for React Compiler errors and updating records…`,
+        )
+    }
 
     //
-    // Compile files and update `compilerErrors` with `customReactCompilerLogger`
+    // Compile only existing files and update `compilerErrors` with `customReactCompilerLogger`
     //
 
     await babel.compileFiles({
-        filePaths,
+        filePaths: existingFilePaths,
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    const records = exitIfErrorsIncreased({ filePaths, recordsFilePath })
+    const records = exitIfErrorsIncreased({ filePaths: existingFilePaths, recordsFilePath })
 
     //
-    // Update and stage records file
+    // Update and stage records file (includes deleted files so they get removed from records)
     //
 
     recordsFile.save({
-        filePaths,
+        filePaths: allFilePaths,
         recordsPath: recordsFilePath,
         compilerErrors: Object.fromEntries(compilerErrors.entries()),
         records: records?.files ?? null,
@@ -211,7 +232,8 @@ async function runCheckFiles({
         return
     }
 
-    console.log(`🔍 Checking ${filePaths.length} files for React Compiler errors…`)
+    const fileWord = pluralize(filePaths.length, 'file', 'files')
+    console.log(`🔍 Checking ${filePaths.length} ${fileWord} for React Compiler errors…`)
 
     //
     // Compile files and update `compilerErrors` with `customReactCompilerLogger`

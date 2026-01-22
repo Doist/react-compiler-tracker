@@ -2,7 +2,13 @@ import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { glob } from 'glob'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { filterByGlob, getAll, normalizeFilePaths, validateFilesExist } from './source-files.mjs'
+import {
+    filterByGlob,
+    getAll,
+    normalizeFilePaths,
+    partitionByExistence,
+    validateFilesExist,
+} from './source-files.mjs'
 
 vi.mock('node:child_process', () => ({
     execSync: vi.fn(),
@@ -262,5 +268,48 @@ describe('validateFilesExist', () => {
         expect(() => validateFilesExist(['exists.tsx', 'missing.tsx'])).toThrow(
             'File not found: missing.tsx',
         )
+    })
+})
+
+describe('partitionByExistence', () => {
+    it('partitions files into existing and deleted sets', () => {
+        vi.mocked(existsSync).mockImplementation(
+            (path) => path === 'exists1.tsx' || path === 'exists2.tsx',
+        )
+
+        const result = partitionByExistence([
+            'exists1.tsx',
+            'deleted.tsx',
+            'exists2.tsx',
+            'also-deleted.tsx',
+        ])
+
+        expect(result.existing).toEqual(['exists1.tsx', 'exists2.tsx'])
+        expect(result.deleted).toEqual(['deleted.tsx', 'also-deleted.tsx'])
+    })
+
+    it('returns all files as existing when all exist', () => {
+        vi.mocked(existsSync).mockReturnValue(true)
+
+        const result = partitionByExistence(['file1.tsx', 'file2.tsx'])
+
+        expect(result.existing).toEqual(['file1.tsx', 'file2.tsx'])
+        expect(result.deleted).toEqual([])
+    })
+
+    it('returns all files as deleted when none exist', () => {
+        vi.mocked(existsSync).mockReturnValue(false)
+
+        const result = partitionByExistence(['file1.tsx', 'file2.tsx'])
+
+        expect(result.existing).toEqual([])
+        expect(result.deleted).toEqual(['file1.tsx', 'file2.tsx'])
+    })
+
+    it('handles empty file list', () => {
+        const result = partitionByExistence([])
+
+        expect(result.existing).toEqual([])
+        expect(result.deleted).toEqual([])
     })
 })

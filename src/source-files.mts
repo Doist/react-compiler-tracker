@@ -104,4 +104,22 @@ function validateFilesExist(filePaths: string[]) {
     }
 }
 
-export { getAll, normalizeFilePaths, filterByGlob, validateFilesExist }
+/**
+ * Partitions file paths into existing and deleted sets based on filesystem existence.
+ */
+function partitionByExistence(filePaths: string[]): { existing: string[]; deleted: string[] } {
+    const existing: string[] = []
+    const deleted: string[] = []
+
+    for (const filePath of filePaths) {
+        if (existsSync(filePath)) {
+            existing.push(filePath)
+        } else {
+            deleted.push(filePath)
+        }
+    }
+
+    return { existing, deleted }
+}
+
+export { getAll, normalizeFilePaths, filterByGlob, validateFilesExist, partitionByExistence }
