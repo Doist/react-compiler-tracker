@@ -74,7 +74,7 @@ npx @doist/react-compiler-tracker --overwrite
 
 ### `--stage-record-file <file1> <file2> ...`
 
-Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files. Reports when errors decrease, celebrating your progress. Deleted files are automatically removed from the records.
+Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files. Reports when errors decrease, celebrating your progress. Deleted files are automatically removed from the records (no need to pass their paths).
 
 ```bash
 npx @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
@@ -130,8 +130,9 @@ With lint-staged, the matched files are automatically passed as arguments to the
 
 ```bash
 #!/bin/sh
-# Get staged files (including deleted) and pass them to the tracker
-FILES=$(git diff --diff-filter=ACMRD --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
+# Get staged files and pass them to the tracker
+# (deleted files are auto-detected from records, no need to pass them)
+FILES=$(git diff --diff-filter=ACMR --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
 if [ -n "$FILES" ]; then
   npx @doist/react-compiler-tracker --stage-record-file $FILES
 fi

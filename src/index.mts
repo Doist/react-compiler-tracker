@@ -48,12 +48,9 @@ async function main() {
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
                 })
-                const { existing, deleted } = sourceFiles.partitionByExistence(filePaths)
 
                 return await runStageRecords({
-                    existingFilePaths: existing,
-                    allFilePaths: filePaths,
-                    deletedFilePaths: deleted,
+                    filePaths,
                     recordsFilePath: config.recordsFile,
                 })
             }
@@ -136,10 +133,10 @@ async function runOverwriteRecords({
 
     if (totalErrors > 0) {
         console.log(
-            `✅ Records file completed. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
+            `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
         )
     } else {
-        console.log('🎉 No React Compiler errors found')
+        console.log(`🎉 Records saved to ${recordsFilePath}. No React Compiler errors found`)
     }
 }
 
@@ -147,29 +144,35 @@ async function runOverwriteRecords({
  * Handles the `--stage-record-file` flag by checking provided files and updating the records file.
  *
  * If errors have increased, the process will exit with code 1 and the records file will not be updated.
- * Deleted files are automatically removed from the records.
+ * Deleted files are automatically detected by checking which recorded files no longer exist on disk.
  */
 async function runStageRecords({
-    existingFilePaths,
-    allFilePaths,
-    deletedFilePaths,
+    filePaths,
     recordsFilePath,
 }: {
-    existingFilePaths: string[]
-    allFilePaths: string[]
-    deletedFilePaths: string[]
+    filePaths: string[]
     recordsFilePath: string
 }) {
+    const records = recordsFile.load(recordsFilePath)
+    const recordedFilePaths = records ? Object.keys(records.files) : []
+    const { deleted: deletedFromRecords } = sourceFiles.partitionByExistence(recordedFilePaths)
+
+    const { existing: existingFilePaths, deleted: deletedFromInput } =
+        sourceFiles.partitionByExistence(filePaths)
+
+    const allDeletedFilePaths = [...new Set([...deletedFromRecords, ...deletedFromInput])]
+    const allFilePaths = [...new Set([...filePaths, ...deletedFromRecords])]
+
     if (!allFilePaths.length) {
         console.log('✅ No files to check')
         return
     }
 
-    if (deletedFilePaths.length > 0) {
-        const deletedFileWord = pluralize(deletedFilePaths.length, 'file', 'files')
-        const fileList = deletedFilePaths.map((f) => `  • ${f}`).join('\n')
+    if (allDeletedFilePaths.length > 0) {
+        const deletedFileWord = pluralize(allDeletedFilePaths.length, 'file', 'files')
+        const fileList = allDeletedFilePaths.map((f) => `  • ${f}`).join('\n')
         console.log(
-            `🗑️  Removing ${deletedFilePaths.length} deleted ${deletedFileWord} from records:\n${fileList}`,
+            `🗑️  Removing ${allDeletedFilePaths.length} deleted ${deletedFileWord} from records:\n${fileList}`,
         )
     }
 
@@ -191,7 +194,7 @@ async function runStageRecords({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    const records = checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath })
+    checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath, records })
 
     //
     // Update and stage records file (includes deleted files so they get removed from records)
@@ -212,7 +215,7 @@ async function runStageRecords({
         exitWithWarning(`Failed to stage records file at ${recordsFileRelativePath}`)
     }
 
-    console.log('✅ No new React Compiler errors')
+    console.log(`✅ Records saved to ${recordsFilePath}. No new React Compiler errors`)
 }
 
 /**
@@ -304,11 +307,13 @@ function getErrorCount() {
 function checkErrorChanges({
     filePaths,
     recordsFilePath,
+    records: providedRecords,
 }: {
     filePaths: string[]
     recordsFilePath: string
+    records?: recordsFile.Records | null
 }) {
-    const records = recordsFile.load(recordsFilePath)
+    const records = providedRecords ?? recordsFile.load(recordsFilePath)
     const { increases, decreases } = recordsFile.getErrorChanges({
         filePaths,
         existingRecords: records?.files ?? {},
