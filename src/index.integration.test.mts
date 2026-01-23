@@ -75,7 +75,7 @@ describe('CLI', () => {
             '🔍 Checking all 5 source files for React Compiler errors and recreating records…',
         )
         expect(output).toContain(
-            '✅ Records file completed. Found 4 total React Compiler issues across 2 files',
+            '✅ Records saved to .react-compiler.rec.json. Found 4 total React Compiler issues across 2 files',
         )
 
         const records = JSON.parse(readFileSync(recordsPath, 'utf8'))

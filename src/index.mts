@@ -133,10 +133,10 @@ async function runOverwriteRecords({
 
     if (totalErrors > 0) {
         console.log(
-            `✅ Records file completed. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
+            `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
         )
     } else {
-        console.log('🎉 No React Compiler errors found')
+        console.log(`🎉 Records saved to ${recordsFilePath}. No React Compiler errors found`)
     }
 }
 
@@ -215,7 +215,7 @@ async function runStageRecords({
         exitWithWarning(`Failed to stage records file at ${recordsFileRelativePath}`)
     }
 
-    console.log('✅ No new React Compiler errors')
+    console.log(`✅ Records saved to ${recordsFilePath}. No new React Compiler errors`)
 }
 
 /**
