@@ -2,16 +2,13 @@
 
 import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
+import { parseArgs } from './args.mjs'
 import * as babel from './babel.mjs'
 import { loadConfig } from './config.mjs'
 import type { FileErrors } from './records-file.mjs'
 import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
 import { pluralize } from './utils.mjs'
-
-const OVERWRITE_FLAG = '--overwrite'
-const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
-const CHECK_FILES_FLAG = '--check-files'
 
 const compilerErrors: Map<string, FileErrors> = new Map()
 
@@ -37,13 +34,11 @@ main().catch(console.error)
 
 async function main() {
     const config = loadConfig()
+    const { command, filePaths: filePathParams } = parseArgs(process.argv.slice(2))
 
     try {
-        const flag = process.argv[2]
-
-        switch (flag) {
-            case STAGE_RECORD_FILE_FLAG: {
-                const filePathParams = process.argv.slice(3)
+        switch (command) {
+            case 'stage-record-file': {
                 const filePaths = sourceFiles.filterByGlob({
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
@@ -54,14 +49,13 @@ async function main() {
                     recordsFilePath: config.recordsFile,
                 })
             }
-            case OVERWRITE_FLAG: {
+            case 'overwrite': {
                 return await runOverwriteRecords({
                     sourceGlob: config.sourceGlob,
                     recordsFilePath: config.recordsFile,
                 })
             }
-            case CHECK_FILES_FLAG: {
-                const filePathParams = process.argv.slice(3)
+            case 'check-files': {
                 const filePaths = sourceFiles.filterByGlob({
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
