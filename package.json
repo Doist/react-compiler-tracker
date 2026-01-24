@@ -1,6 +1,6 @@
 {
   "name": "@doist/react-compiler-tracker",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A React Compiler violation tracker to help migrations and prevent regressions",
   "type": "module",
   "main": "dist/index.mjs",
