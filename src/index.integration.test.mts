@@ -76,6 +76,22 @@ describe('CLI', () => {
         expect(output).toMatch(/Line \d+:/)
     })
 
+    it('--show-errors works with default check-all', () => {
+        const output = runCLI(['--show-errors'])
+
+        expect(output).toContain('Found 4 React Compiler issues')
+        expect(output).toContain('Detailed errors:')
+        expect(output).toMatch(/Line \d+:/)
+    })
+
+    it('--overwrite --show-errors shows detailed errors while saving', () => {
+        const output = runCLI(['--overwrite', '--show-errors'])
+
+        expect(output).toContain('Records saved to')
+        expect(output).toContain('Detailed errors:')
+        expect(output).toMatch(/Line \d+:/)
+    })
+
     it('accepts --overwrite flag', () => {
         const output = runCLI(['--overwrite'])
 
@@ -119,6 +135,14 @@ describe('CLI', () => {
             expect(output).toContain('React Compiler errors have increased in:')
             expect(output).toContain('• src/bad-component.tsx: +1')
             expect(output).toContain('• src/bad-hook.ts: +3')
+        })
+
+        it('--stage-record-file --show-errors shows detailed errors', () => {
+            const output = runCLI(['--stage-record-file', '--show-errors', 'src/bad-hook.ts'])
+
+            expect(output).toContain('React Compiler errors have increased')
+            expect(output).toContain('Detailed errors:')
+            expect(output).toMatch(/Line \d+:/)
         })
 
         it('checks provided files with existing records', () => {

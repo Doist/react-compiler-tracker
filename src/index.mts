@@ -70,12 +70,14 @@ async function main() {
                 return await runStageRecords({
                     filePaths,
                     recordsFilePath: config.recordsFile,
+                    showErrors,
                 })
             }
             case 'overwrite': {
                 return await runOverwriteRecords({
                     sourceGlob: config.sourceGlob,
                     recordsFilePath: config.recordsFile,
+                    showErrors,
                 })
             }
             case 'check-files': {
@@ -92,7 +94,7 @@ async function main() {
                 })
             }
             default: {
-                return await runCheckAllFiles({ sourceGlob: config.sourceGlob })
+                return await runCheckAllFiles({ sourceGlob: config.sourceGlob, showErrors })
             }
         }
     } catch (error: unknown) {
@@ -110,9 +112,11 @@ async function main() {
 async function runOverwriteRecords({
     sourceGlob,
     recordsFilePath,
+    showErrors,
 }: {
     sourceGlob: string
     recordsFilePath: string
+    showErrors: boolean
 }) {
     const filePaths = sourceFiles.getAll({
         globPattern: sourceGlob,
@@ -153,9 +157,19 @@ async function runOverwriteRecords({
     const totalErrors = getErrorCount()
 
     if (totalErrors > 0) {
-        console.log(
-            `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
-        )
+        let message = `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`
+
+        if (showErrors) {
+            message += '\n\nDetailed errors:'
+            for (const [filePath, details] of compilerErrorDetails) {
+                for (const detail of details) {
+                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
+                    message += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
+                }
+            }
+        }
+
+        console.log(message)
     } else {
         console.log(`🎉 Records saved to ${recordsFilePath}. No React Compiler errors found`)
     }
@@ -170,9 +184,11 @@ async function runOverwriteRecords({
 async function runStageRecords({
     filePaths,
     recordsFilePath,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
+    showErrors: boolean
 }) {
     const records = recordsFile.load(recordsFilePath)
     const recordedFilePaths = records ? Object.keys(records.files) : []
@@ -215,7 +231,7 @@ async function runStageRecords({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath, records })
+    checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath, records, showErrors })
 
     //
     // Update and stage records file (includes deleted files so they get removed from records)
@@ -280,7 +296,13 @@ async function runCheckFiles({
  *
  * The records file is not updated.
  */
-async function runCheckAllFiles({ sourceGlob }: { sourceGlob: string }) {
+async function runCheckAllFiles({
+    sourceGlob,
+    showErrors,
+}: {
+    sourceGlob: string
+    showErrors: boolean
+}) {
     const filePaths = sourceFiles.getAll({
         globPattern: sourceGlob,
     })
@@ -307,9 +329,19 @@ async function runCheckAllFiles({ sourceGlob }: { sourceGlob: string }) {
     const totalErrors = getErrorCount()
 
     if (totalErrors > 0) {
-        exitWithWarning(
-            `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`,
-        )
+        let message = `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`
+
+        if (showErrors) {
+            message += '\n\nDetailed errors:'
+            for (const [filePath, details] of compilerErrorDetails) {
+                for (const detail of details) {
+                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
+                    message += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
+                }
+            }
+        }
+
+        exitWithWarning(message)
     }
 
     console.log('🎉 No React Compiler errors found')
