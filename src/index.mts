@@ -12,6 +12,14 @@ import { pluralize } from './utils.mjs'
 
 const compilerErrors: Map<string, FileErrors> = new Map()
 
+type ErrorDetail = {
+    kind: 'CompileError' | 'CompileSkip' | 'PipelineError'
+    line: number | null
+    reason: string
+}
+
+const compilerErrorDetails: Map<string, ErrorDetail[]> = new Map()
+
 const customReactCompilerLogger: ReactCompilerLogger = {
     logEvent: (filename, event) => {
         if (!filename) return
@@ -26,6 +34,21 @@ const customReactCompilerLogger: ReactCompilerLogger = {
             const current = compilerErrors.get(relativePath) || {}
             current[event.kind] = (current[event.kind] ?? 0) + 1
             compilerErrors.set(relativePath, current)
+
+            // Capture detailed error information
+            const line = event.fnLoc?.start.line ?? null
+            let reason: string
+            if (event.kind === 'CompileError') {
+                reason = event.detail.reason
+            } else if (event.kind === 'CompileSkip') {
+                reason = event.reason
+            } else {
+                reason = String(event.data)
+            }
+
+            const details = compilerErrorDetails.get(relativePath) || []
+            details.push({ kind: event.kind, line, reason })
+            compilerErrorDetails.set(relativePath, details)
         }
     },
 }
@@ -34,7 +57,7 @@ main().catch(console.error)
 
 async function main() {
     const config = loadConfig()
-    const { command, filePaths: filePathParams } = parseArgs(process.argv.slice(2))
+    const { command, filePaths: filePathParams, showErrors } = parseArgs(process.argv.slice(2))
 
     try {
         switch (command) {
@@ -62,7 +85,11 @@ async function main() {
                 })
                 sourceFiles.validateFilesExist(filePaths)
 
-                return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
+                return await runCheckFiles({
+                    filePaths,
+                    recordsFilePath: config.recordsFile,
+                    showErrors,
+                })
             }
             default: {
                 return await runCheckAllFiles({ sourceGlob: config.sourceGlob })
@@ -220,9 +247,11 @@ async function runStageRecords({
 async function runCheckFiles({
     filePaths,
     recordsFilePath,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
+    showErrors: boolean
 }) {
     if (!filePaths.length) {
         console.log('✅ No files to check')
@@ -241,7 +270,7 @@ async function runCheckFiles({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    checkErrorChanges({ filePaths, recordsFilePath })
+    checkErrorChanges({ filePaths, recordsFilePath, showErrors })
 
     console.log('✅ No new React Compiler errors in checked files')
 }
@@ -302,10 +331,12 @@ function checkErrorChanges({
     filePaths,
     recordsFilePath,
     records: providedRecords,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
     records?: recordsFile.Records | null
+    showErrors?: boolean
 }) {
     const records = providedRecords ?? recordsFile.load(recordsFilePath)
     const { increases, decreases } = recordsFile.getErrorChanges({
@@ -332,9 +363,22 @@ function checkErrorChanges({
     if (increaseEntries.length) {
         const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
 
-        exitWithError(
-            `React Compiler errors have increased in:\n${errorList.join('\n')}\n\nPlease fix the errors and run the command again.`,
-        )
+        let errorMessage = `React Compiler errors have increased in:\n${errorList.join('\n')}`
+
+        if (showErrors) {
+            errorMessage += '\n\nDetailed errors:'
+            for (const [filePath] of increaseEntries) {
+                const details = compilerErrorDetails.get(filePath) || []
+                for (const detail of details) {
+                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
+                    errorMessage += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
+                }
+            }
+        }
+
+        errorMessage += '\n\nPlease fix the errors and run the command again.'
+
+        exitWithError(errorMessage)
     }
 
     return records

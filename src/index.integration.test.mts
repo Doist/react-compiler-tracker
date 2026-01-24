@@ -68,6 +68,14 @@ describe('CLI', () => {
         expect(output).not.toContain('File not found')
     })
 
+    it('--check-files --show-errors shows detailed error info', () => {
+        const output = runCLI(['--check-files', '--show-errors', 'src/bad-hook.ts'])
+
+        expect(output).toContain('React Compiler errors have increased')
+        expect(output).toContain('Detailed errors:')
+        expect(output).toMatch(/Line \d+:/)
+    })
+
     it('accepts --overwrite flag', () => {
         const output = runCLI(['--overwrite'])
 
