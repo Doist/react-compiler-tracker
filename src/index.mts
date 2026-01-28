@@ -378,7 +378,7 @@ function checkErrorChanges({
     filePaths: string[]
     recordsFilePath: string
     records?: recordsFile.Records | null
-    showErrors?: boolean
+    showErrors: boolean
 }) {
     const records = providedRecords ?? recordsFile.load(recordsFilePath)
     const { increases, decreases } = recordsFile.getErrorChanges({
