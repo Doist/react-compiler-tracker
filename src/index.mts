@@ -2,6 +2,7 @@
 
 import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
+import { parseArgs } from './args.mjs'
 import * as babel from './babel.mjs'
 import { loadConfig } from './config.mjs'
 import type { FileErrors } from './records-file.mjs'
@@ -9,11 +10,16 @@ import * as recordsFile from './records-file.mjs'
 import * as sourceFiles from './source-files.mjs'
 import { pluralize } from './utils.mjs'
 
-const OVERWRITE_FLAG = '--overwrite'
-const STAGE_RECORD_FILE_FLAG = '--stage-record-file'
-const CHECK_FILES_FLAG = '--check-files'
-
 const compilerErrors: Map<string, FileErrors> = new Map()
+
+type ErrorDetailWithCount = {
+    kind: 'CompileError' | 'CompileSkip' | 'PipelineError'
+    line: number | null
+    reason: string
+    count: number
+}
+
+const compilerErrorDetails: Map<string, Map<string, ErrorDetailWithCount>> = new Map()
 
 const customReactCompilerLogger: ReactCompilerLogger = {
     logEvent: (filename, event) => {
@@ -29,6 +35,26 @@ const customReactCompilerLogger: ReactCompilerLogger = {
             const current = compilerErrors.get(relativePath) || {}
             current[event.kind] = (current[event.kind] ?? 0) + 1
             compilerErrors.set(relativePath, current)
+
+            const line = event.fnLoc?.start.line ?? null
+            let reason: string
+            if (event.kind === 'CompileError') {
+                reason = event.detail.reason
+            } else if (event.kind === 'CompileSkip') {
+                reason = event.reason
+            } else {
+                reason = String(event.data)
+            }
+
+            const detailsMap = compilerErrorDetails.get(relativePath) || new Map()
+            const errorKey = `${line}|${reason}`
+            const existing = detailsMap.get(errorKey)
+            if (existing) {
+                existing.count += 1
+            } else {
+                detailsMap.set(errorKey, { kind: event.kind, line, reason, count: 1 })
+            }
+            compilerErrorDetails.set(relativePath, detailsMap)
         }
     },
 }
@@ -37,13 +63,11 @@ main().catch(console.error)
 
 async function main() {
     const config = loadConfig()
+    const { command, filePaths: filePathParams, showErrors } = parseArgs(process.argv.slice(2))
 
     try {
-        const flag = process.argv[2]
-
-        switch (flag) {
-            case STAGE_RECORD_FILE_FLAG: {
-                const filePathParams = process.argv.slice(3)
+        switch (command) {
+            case 'stage-record-file': {
                 const filePaths = sourceFiles.filterByGlob({
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
@@ -52,26 +76,31 @@ async function main() {
                 return await runStageRecords({
                     filePaths,
                     recordsFilePath: config.recordsFile,
+                    showErrors,
                 })
             }
-            case OVERWRITE_FLAG: {
+            case 'overwrite': {
                 return await runOverwriteRecords({
                     sourceGlob: config.sourceGlob,
                     recordsFilePath: config.recordsFile,
+                    showErrors,
                 })
             }
-            case CHECK_FILES_FLAG: {
-                const filePathParams = process.argv.slice(3)
+            case 'check-files': {
                 const filePaths = sourceFiles.filterByGlob({
                     filePaths: sourceFiles.normalizeFilePaths(filePathParams),
                     globPattern: config.sourceGlob,
                 })
                 sourceFiles.validateFilesExist(filePaths)
 
-                return await runCheckFiles({ filePaths, recordsFilePath: config.recordsFile })
+                return await runCheckFiles({
+                    filePaths,
+                    recordsFilePath: config.recordsFile,
+                    showErrors,
+                })
             }
             default: {
-                return await runCheckAllFiles({ sourceGlob: config.sourceGlob })
+                return await runCheckAllFiles({ sourceGlob: config.sourceGlob, showErrors })
             }
         }
     } catch (error: unknown) {
@@ -89,9 +118,11 @@ async function main() {
 async function runOverwriteRecords({
     sourceGlob,
     recordsFilePath,
+    showErrors,
 }: {
     sourceGlob: string
     recordsFilePath: string
+    showErrors: boolean
 }) {
     const filePaths = sourceFiles.getAll({
         globPattern: sourceGlob,
@@ -132,9 +163,14 @@ async function runOverwriteRecords({
     const totalErrors = getErrorCount()
 
     if (totalErrors > 0) {
-        console.log(
-            `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`,
-        )
+        let message = `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`
+
+        if (showErrors) {
+            message += '\n\nDetailed errors:'
+            message += formatErrorDetails()
+        }
+
+        console.log(message)
     } else {
         console.log(`🎉 Records saved to ${recordsFilePath}. No React Compiler errors found`)
     }
@@ -149,9 +185,11 @@ async function runOverwriteRecords({
 async function runStageRecords({
     filePaths,
     recordsFilePath,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
+    showErrors: boolean
 }) {
     const records = recordsFile.load(recordsFilePath)
     const recordedFilePaths = records ? Object.keys(records.files) : []
@@ -194,7 +232,7 @@ async function runStageRecords({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath, records })
+    checkErrorChanges({ filePaths: existingFilePaths, recordsFilePath, records, showErrors })
 
     //
     // Update and stage records file (includes deleted files so they get removed from records)
@@ -226,9 +264,11 @@ async function runStageRecords({
 async function runCheckFiles({
     filePaths,
     recordsFilePath,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
+    showErrors: boolean
 }) {
     if (!filePaths.length) {
         console.log('✅ No files to check')
@@ -247,7 +287,7 @@ async function runCheckFiles({
         customReactCompilerLogger: customReactCompilerLogger,
     })
 
-    checkErrorChanges({ filePaths, recordsFilePath })
+    checkErrorChanges({ filePaths, recordsFilePath, showErrors })
 
     console.log('✅ No new React Compiler errors in checked files')
 }
@@ -257,7 +297,13 @@ async function runCheckFiles({
  *
  * The records file is not updated.
  */
-async function runCheckAllFiles({ sourceGlob }: { sourceGlob: string }) {
+async function runCheckAllFiles({
+    sourceGlob,
+    showErrors,
+}: {
+    sourceGlob: string
+    showErrors: boolean
+}) {
     const filePaths = sourceFiles.getAll({
         globPattern: sourceGlob,
     })
@@ -284,9 +330,14 @@ async function runCheckAllFiles({ sourceGlob }: { sourceGlob: string }) {
     const totalErrors = getErrorCount()
 
     if (totalErrors > 0) {
-        exitWithWarning(
-            `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`,
-        )
+        let message = `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`
+
+        if (showErrors) {
+            message += '\n\nDetailed errors:'
+            message += formatErrorDetails()
+        }
+
+        exitWithWarning(message)
     }
 
     console.log('🎉 No React Compiler errors found')
@@ -299,6 +350,20 @@ function getErrorCount() {
     )
 }
 
+function formatErrorDetails(filePaths?: string[]): string {
+    let result = ''
+    for (const [filePath, detailsMap] of compilerErrorDetails) {
+        if (filePaths && !filePaths.includes(filePath)) continue
+
+        for (const detail of detailsMap.values()) {
+            const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
+            const countSuffix = detail.count > 1 ? ` (x${detail.count})` : ''
+            result += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}${countSuffix}`
+        }
+    }
+    return result
+}
+
 /**
  * Compare error changes between the existing records and errors captured during this session in `compilerErrors`.
  * If errors have increased, exit with an error message.
@@ -308,10 +373,12 @@ function checkErrorChanges({
     filePaths,
     recordsFilePath,
     records: providedRecords,
+    showErrors,
 }: {
     filePaths: string[]
     recordsFilePath: string
     records?: recordsFile.Records | null
+    showErrors: boolean
 }) {
     const records = providedRecords ?? recordsFile.load(recordsFilePath)
     const { increases, decreases } = recordsFile.getErrorChanges({
@@ -338,9 +405,16 @@ function checkErrorChanges({
     if (increaseEntries.length) {
         const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
 
-        exitWithError(
-            `React Compiler errors have increased in:\n${errorList.join('\n')}\n\nPlease fix the errors and run the command again.`,
-        )
+        let errorMessage = `React Compiler errors have increased in:\n${errorList.join('\n')}`
+
+        if (showErrors) {
+            errorMessage += '\n\nDetailed errors:'
+            errorMessage += formatErrorDetails(increaseEntries.map(([filePath]) => filePath))
+        }
+
+        errorMessage += '\n\nPlease fix the errors and run the command again.'
+
+        exitWithError(errorMessage)
     }
 
     return records

@@ -98,6 +98,24 @@ Checks all source files matching `sourceGlob` and reports the total error count.
 npx @doist/react-compiler-tracker
 ```
 
+### `--show-errors`
+
+Shows error information from the compiler including file path, line number, and error reason. Can be combined with any command.
+
+```bash
+npx @doist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
+```
+
+Example output:
+```
+React Compiler errors have increased in:
+  • src/components/Button.tsx: +3
+
+Detailed errors:
+    - src/components/Button.tsx: Line 15: Cannot access refs during render (x2)
+    - src/components/Button.tsx: Line 28: Invalid hook usage
+```
+
 ## Integration Examples
 
 ### lint-staged

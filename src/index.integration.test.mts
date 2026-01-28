@@ -33,65 +33,97 @@ describe('CLI', () => {
         }
     })
 
-    it('runs check on all files when no flag provided', () => {
-        const output = runCLI()
+    describe('no flag (default check-all)', () => {
+        it('runs check on all files when no flag provided', () => {
+            const output = runCLI()
 
-        expect(output).toContain('🔍 Checking all 5 source files for React Compiler errors…')
-        expect(output).toContain('⚠️  Found 4 React Compiler issues across 2 files')
-        expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
-    })
+            expect(output).toContain('🔍 Checking all 5 source files for React Compiler errors…')
+            expect(output).toContain('⚠️  Found 4 React Compiler issues across 2 files')
+            expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
+        })
 
-    it('accepts --check-files flag with file arguments', () => {
-        const output = runCLI(['--check-files', 'src/bad-component.tsx', 'src/bad-hook.ts'])
+        it('--show-errors works with default check-all', () => {
+            const output = runCLI(['--show-errors'])
 
-        expect(output).toContain('🔍 Checking 2 files for React Compiler errors…')
-        expect(output).toContain('React Compiler errors have increased in:')
-        expect(output).toContain('• src/bad-component.tsx: +1')
-        expect(output).toContain('• src/bad-hook.ts: +3')
-        expect(output).toContain('Please fix the errors and run the command again.')
-        expect(output).not.toContain('src/good-component.tsx')
-        expect(output).not.toContain('src/good-hook.ts')
-        expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
-    })
-
-    it('errors when file does not exist', () => {
-        const output = runCLI(['--check-files', 'src/nonexistent-file.tsx'])
-
-        expect(output).toContain('File not found: src/nonexistent-file.tsx')
-    })
-
-    it('handles shell-escaped file paths with $ character', () => {
-        // Simulate what CI tools do when passing filenames with $ through shell variables
-        const output = runCLI(['--check-files', 'src/route.\\$param.tsx'])
-
-        expect(output).toContain('🔍 Checking 1 file for React Compiler errors…')
-        expect(output).not.toContain('File not found')
-    })
-
-    it('accepts --overwrite flag', () => {
-        const output = runCLI(['--overwrite'])
-
-        expect(output).toContain(
-            '🔍 Checking all 5 source files for React Compiler errors and recreating records…',
-        )
-        expect(output).toContain(
-            '✅ Records saved to .react-compiler.rec.json. Found 4 total React Compiler issues across 2 files',
-        )
-
-        const records = JSON.parse(readFileSync(recordsPath, 'utf8'))
-        expect(records.recordVersion).toBe(1)
-        expect(records['react-compiler-version']).toBe('1.0.0')
-        expect(records.files).toEqual({
-            'src/bad-component.tsx': {
-                CompileError: 1,
-            },
-            'src/bad-hook.ts': {
-                CompileError: 3,
-            },
+            expect(output).toContain('Found 4 React Compiler issues')
+            expect(output).toContain('Detailed errors:')
+            expect(output).toMatch(/Line \d+:/)
         })
     })
 
-    describe('--stage-record-file flag', () => {
+    describe('--check-files', () => {
+        it('accepts --check-files flag with file arguments', () => {
+            const output = runCLI(['--check-files', 'src/bad-component.tsx', 'src/bad-hook.ts'])
+
+            expect(output).toContain('🔍 Checking 2 files for React Compiler errors…')
+            expect(output).toContain('React Compiler errors have increased in:')
+            expect(output).toContain('• src/bad-component.tsx: +1')
+            expect(output).toContain('• src/bad-hook.ts: +3')
+            expect(output).toContain('Please fix the errors and run the command again.')
+            expect(output).not.toContain('src/good-component.tsx')
+            expect(output).not.toContain('src/good-hook.ts')
+            expect(() => JSON.parse(readFileSync(recordsPath, 'utf8'))).toThrow()
+        })
+
+        it('errors when file does not exist', () => {
+            const output = runCLI(['--check-files', 'src/nonexistent-file.tsx'])
+
+            expect(output).toContain('File not found: src/nonexistent-file.tsx')
+        })
+
+        it('handles shell-escaped file paths with $ character', () => {
+            // Simulate what CI tools do when passing filenames with $ through shell variables
+            const output = runCLI(['--check-files', 'src/route.\\$param.tsx'])
+
+            expect(output).toContain('🔍 Checking 1 file for React Compiler errors…')
+            expect(output).not.toContain('File not found')
+        })
+
+        it('--show-errors shows detailed error info', () => {
+            const output = runCLI(['--check-files', '--show-errors', 'src/bad-hook.ts'])
+
+            expect(output).toContain('React Compiler errors have increased')
+            expect(output).toContain('Detailed errors:')
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+            )
+        })
+    })
+
+    describe('--overwrite', () => {
+        it('accepts --overwrite flag', () => {
+            const output = runCLI(['--overwrite'])
+
+            expect(output).toContain(
+                '🔍 Checking all 5 source files for React Compiler errors and recreating records…',
+            )
+            expect(output).toContain(
+                '✅ Records saved to .react-compiler.rec.json. Found 4 total React Compiler issues across 2 files',
+            )
+
+            const records = JSON.parse(readFileSync(recordsPath, 'utf8'))
+            expect(records.recordVersion).toBe(1)
+            expect(records['react-compiler-version']).toBe('1.0.0')
+            expect(records.files).toEqual({
+                'src/bad-component.tsx': {
+                    CompileError: 1,
+                },
+                'src/bad-hook.ts': {
+                    CompileError: 3,
+                },
+            })
+        })
+
+        it('--show-errors shows detailed errors while saving', () => {
+            const output = runCLI(['--overwrite', '--show-errors'])
+
+            expect(output).toContain('Records saved to')
+            expect(output).toContain('Detailed errors:')
+            expect(output).toMatch(/Line \d+:/)
+        })
+    })
+
+    describe('--stage-record-file', () => {
         it('exits cleanly when no files provided', () => {
             const output = runCLI(['--stage-record-file'])
 
@@ -111,6 +143,14 @@ describe('CLI', () => {
             expect(output).toContain('React Compiler errors have increased in:')
             expect(output).toContain('• src/bad-component.tsx: +1')
             expect(output).toContain('• src/bad-hook.ts: +3')
+        })
+
+        it('--stage-record-file --show-errors shows detailed errors', () => {
+            const output = runCLI(['--stage-record-file', '--show-errors', 'src/bad-hook.ts'])
+
+            expect(output).toContain('React Compiler errors have increased')
+            expect(output).toContain('Detailed errors:')
+            expect(output).toMatch(/Line \d+:/)
         })
 
         it('checks provided files with existing records', () => {
