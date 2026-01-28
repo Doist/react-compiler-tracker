@@ -12,13 +12,14 @@ import { pluralize } from './utils.mjs'
 
 const compilerErrors: Map<string, FileErrors> = new Map()
 
-type ErrorDetail = {
+type ErrorDetailWithCount = {
     kind: 'CompileError' | 'CompileSkip' | 'PipelineError'
     line: number | null
     reason: string
+    count: number
 }
 
-const compilerErrorDetails: Map<string, ErrorDetail[]> = new Map()
+const compilerErrorDetails: Map<string, Map<string, ErrorDetailWithCount>> = new Map()
 
 const customReactCompilerLogger: ReactCompilerLogger = {
     logEvent: (filename, event) => {
@@ -35,7 +36,6 @@ const customReactCompilerLogger: ReactCompilerLogger = {
             current[event.kind] = (current[event.kind] ?? 0) + 1
             compilerErrors.set(relativePath, current)
 
-            // Capture detailed error information
             const line = event.fnLoc?.start.line ?? null
             let reason: string
             if (event.kind === 'CompileError') {
@@ -46,9 +46,15 @@ const customReactCompilerLogger: ReactCompilerLogger = {
                 reason = String(event.data)
             }
 
-            const details = compilerErrorDetails.get(relativePath) || []
-            details.push({ kind: event.kind, line, reason })
-            compilerErrorDetails.set(relativePath, details)
+            const detailsMap = compilerErrorDetails.get(relativePath) || new Map()
+            const errorKey = `${line}|${reason}`
+            const existing = detailsMap.get(errorKey)
+            if (existing) {
+                existing.count += 1
+            } else {
+                detailsMap.set(errorKey, { kind: event.kind, line, reason, count: 1 })
+            }
+            compilerErrorDetails.set(relativePath, detailsMap)
         }
     },
 }
@@ -161,12 +167,7 @@ async function runOverwriteRecords({
 
         if (showErrors) {
             message += '\n\nDetailed errors:'
-            for (const [filePath, details] of compilerErrorDetails) {
-                for (const detail of details) {
-                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
-                    message += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
-                }
-            }
+            message += formatErrorDetails()
         }
 
         console.log(message)
@@ -333,12 +334,7 @@ async function runCheckAllFiles({
 
         if (showErrors) {
             message += '\n\nDetailed errors:'
-            for (const [filePath, details] of compilerErrorDetails) {
-                for (const detail of details) {
-                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
-                    message += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
-                }
-            }
+            message += formatErrorDetails()
         }
 
         exitWithWarning(message)
@@ -352,6 +348,20 @@ function getErrorCount() {
         (sum, errors) => sum + Object.values(errors).reduce((a, b) => a + b, 0),
         0,
     )
+}
+
+function formatErrorDetails(filePaths?: string[]): string {
+    let result = ''
+    for (const [filePath, detailsMap] of compilerErrorDetails) {
+        if (filePaths && !filePaths.includes(filePath)) continue
+
+        for (const detail of detailsMap.values()) {
+            const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
+            const countSuffix = detail.count > 1 ? ` (x${detail.count})` : ''
+            result += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}${countSuffix}`
+        }
+    }
+    return result
 }
 
 /**
@@ -399,13 +409,7 @@ function checkErrorChanges({
 
         if (showErrors) {
             errorMessage += '\n\nDetailed errors:'
-            for (const [filePath] of increaseEntries) {
-                const details = compilerErrorDetails.get(filePath) || []
-                for (const detail of details) {
-                    const lineInfo = detail.line ? `Line ${detail.line}` : 'Unknown location'
-                    errorMessage += `\n    - ${filePath}: ${lineInfo}: ${detail.reason}`
-                }
-            }
+            errorMessage += formatErrorDetails(increaseEntries.map(([filePath]) => filePath))
         }
 
         errorMessage += '\n\nPlease fix the errors and run the command again.'

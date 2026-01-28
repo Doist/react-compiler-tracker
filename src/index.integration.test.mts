@@ -84,7 +84,9 @@ describe('CLI', () => {
 
             expect(output).toContain('React Compiler errors have increased')
             expect(output).toContain('Detailed errors:')
-            expect(output).toMatch(/Line \d+:/)
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+            )
         })
     })
 
