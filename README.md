@@ -100,20 +100,28 @@ npx @doist/react-compiler-tracker
 
 ### `--show-errors`
 
-Shows error information from the compiler including file path, line number, and error reason. Can be combined with any command.
+Shows error information from the compiler including file path, line number, and error reason. Can be combined with any command. Errors are displayed for all checked files regardless of whether they increased.
 
 ```bash
 npx @doist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
 ```
 
-Example output:
+Example output when errors have increased:
 ```
-React Compiler errors have increased in:
-  • src/components/Button.tsx: +3
-
-Detailed errors:
+Errors:
     - src/components/Button.tsx: Line 15: Cannot access refs during render (x2)
     - src/components/Button.tsx: Line 28: Invalid hook usage
+❌ React Compiler errors have increased in:
+  • src/components/Button.tsx: +3
+
+Please fix the errors and run the command again.
+```
+
+When no new errors are introduced, you still see the existing errors:
+```
+Errors:
+    - src/components/Button.tsx: Line 15: Cannot access refs during render (x2)
+✅ No new React Compiler errors in checked files
 ```
 
 ## Integration Examples
