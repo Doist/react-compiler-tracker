@@ -46,7 +46,7 @@ describe('CLI', () => {
             const output = runCLI(['--show-errors'])
 
             expect(output).toContain('Found 4 React Compiler issues')
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toMatch(/Line \d+:/)
         })
     })
@@ -83,7 +83,7 @@ describe('CLI', () => {
             const output = runCLI(['--check-files', '--show-errors', 'src/bad-hook.ts'])
 
             expect(output).toContain('React Compiler errors have increased')
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toContain(
                 'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
             )
@@ -93,7 +93,7 @@ describe('CLI', () => {
             runCLI(['--overwrite'])
             const output = runCLI(['--check-files', '--show-errors', 'src/bad-hook.ts'])
 
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toContain(
                 'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
             )
@@ -130,7 +130,7 @@ describe('CLI', () => {
             const output = runCLI(['--overwrite', '--show-errors'])
 
             expect(output).toContain('Records saved to')
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toMatch(/Line \d+:/)
         })
     })
@@ -161,7 +161,7 @@ describe('CLI', () => {
             const output = runCLI(['--stage-record-file', '--show-errors', 'src/bad-hook.ts'])
 
             expect(output).toContain('React Compiler errors have increased')
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toMatch(/Line \d+:/)
         })
 
@@ -169,7 +169,7 @@ describe('CLI', () => {
             runCLI(['--overwrite'])
             const output = runCLI(['--stage-record-file', '--show-errors', 'src/bad-hook.ts'])
 
-            expect(output).toContain('Detailed errors:')
+            expect(output).toContain('Errors:')
             expect(output).toContain(
                 'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
             )

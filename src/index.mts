@@ -166,7 +166,7 @@ async function runOverwriteRecords({
         let message = `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`
 
         if (showErrors) {
-            message += '\n\nDetailed errors:'
+            message += '\n\nErrors:'
             message += formatErrorDetails()
         }
 
@@ -333,7 +333,7 @@ async function runCheckAllFiles({
         let message = `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`
 
         if (showErrors) {
-            message += '\n\nDetailed errors:'
+            message += '\n\nErrors:'
             message += formatErrorDetails()
         }
 
@@ -405,7 +405,7 @@ function checkErrorChanges({
     if (showErrors) {
         const errorDetails = formatErrorDetails(filePaths)
         if (errorDetails) {
-            console.log('Detailed errors:' + errorDetails)
+            console.log('Errors:' + errorDetails)
         }
     }
 
