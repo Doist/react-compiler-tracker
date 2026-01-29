@@ -88,6 +88,18 @@ describe('CLI', () => {
                 'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
             )
         })
+
+        it('--show-errors shows errors even when no increase', () => {
+            runCLI(['--overwrite'])
+            const output = runCLI(['--check-files', '--show-errors', 'src/bad-hook.ts'])
+
+            expect(output).toContain('Detailed errors:')
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+            )
+            expect(output).not.toContain('React Compiler errors have increased')
+            expect(output).toContain('✅ No new React Compiler errors')
+        })
     })
 
     describe('--overwrite', () => {
@@ -151,6 +163,17 @@ describe('CLI', () => {
             expect(output).toContain('React Compiler errors have increased')
             expect(output).toContain('Detailed errors:')
             expect(output).toMatch(/Line \d+:/)
+        })
+
+        it('--stage-record-file --show-errors shows errors even when no increase', () => {
+            runCLI(['--overwrite'])
+            const output = runCLI(['--stage-record-file', '--show-errors', 'src/bad-hook.ts'])
+
+            expect(output).toContain('Detailed errors:')
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+            )
+            expect(output).not.toContain('React Compiler errors have increased')
         })
 
         it('checks provided files with existing records', () => {

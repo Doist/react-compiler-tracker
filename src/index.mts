@@ -401,16 +401,19 @@ function checkErrorChanges({
         }
     }
 
+    // Show detailed errors for all checked files if requested
+    if (showErrors) {
+        const errorDetails = formatErrorDetails(filePaths)
+        if (errorDetails) {
+            console.log('Detailed errors:' + errorDetails)
+        }
+    }
+
     // Report increases (exit with error)
     if (increaseEntries.length) {
         const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
 
         let errorMessage = `React Compiler errors have increased in:\n${errorList.join('\n')}`
-
-        if (showErrors) {
-            errorMessage += '\n\nDetailed errors:'
-            errorMessage += formatErrorDetails(increaseEntries.map(([filePath]) => filePath))
-        }
 
         errorMessage += '\n\nPlease fix the errors and run the command again.'
 
