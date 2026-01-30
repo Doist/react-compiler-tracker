@@ -166,7 +166,7 @@ async function runOverwriteRecords({
         let message = `✅ Records saved to ${recordsFilePath}. Found ${totalErrors} total React Compiler issues across ${compilerErrors.size} files`
 
         if (showErrors) {
-            message += '\n\nDetailed errors:'
+            message += '\n\nErrors:'
             message += formatErrorDetails()
         }
 
@@ -333,7 +333,7 @@ async function runCheckAllFiles({
         let message = `Found ${totalErrors} React Compiler issues across ${compilerErrors.size} files`
 
         if (showErrors) {
-            message += '\n\nDetailed errors:'
+            message += '\n\nErrors:'
             message += formatErrorDetails()
         }
 
@@ -401,16 +401,19 @@ function checkErrorChanges({
         }
     }
 
+    // Show detailed errors for all checked files if requested
+    if (showErrors) {
+        const errorDetails = formatErrorDetails(filePaths)
+        if (errorDetails) {
+            console.log('Errors:' + errorDetails)
+        }
+    }
+
     // Report increases (exit with error)
     if (increaseEntries.length) {
         const errorList = increaseEntries.map(([filePath, count]) => `  • ${filePath}: +${count}`)
 
         let errorMessage = `React Compiler errors have increased in:\n${errorList.join('\n')}`
-
-        if (showErrors) {
-            errorMessage += '\n\nDetailed errors:'
-            errorMessage += formatErrorDetails(increaseEntries.map(([filePath]) => filePath))
-        }
 
         errorMessage += '\n\nPlease fix the errors and run the command again.'
 
