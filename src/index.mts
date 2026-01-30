@@ -36,13 +36,25 @@ const customReactCompilerLogger: ReactCompilerLogger = {
             current[event.kind] = (current[event.kind] ?? 0) + 1
             compilerErrors.set(relativePath, current)
 
-            const line = event.fnLoc?.start.line ?? null
+            let line: number | null
             let reason: string
+
             if (event.kind === 'CompileError') {
+                // Use primaryLocation() for precise error location, fall back to fnLoc
+                // primaryLocation() may return a symbol (GeneratedSource), so check for object
+                const loc = event.detail.primaryLocation()
+                line =
+                    (loc && typeof loc === 'object' ? loc.start.line : null) ??
+                    event.fnLoc?.start.line ??
+                    null
                 reason = event.detail.reason
             } else if (event.kind === 'CompileSkip') {
+                // CompileSkip has its own loc field for the precise location
+                line = event.loc?.start.line ?? event.fnLoc?.start.line ?? null
                 reason = event.reason
             } else {
+                // PipelineError only has fnLoc
+                line = event.fnLoc?.start.line ?? null
                 reason = String(event.data)
             }
 
