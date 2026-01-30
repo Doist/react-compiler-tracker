@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.1](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.0...react-compiler-tracker-v2.3.1) (2026-01-30)
+
+
+### Bug Fixes
+
+* report precise error line numbers in --show-errors ([#51](https://github.com/Doist/react-compiler-tracker/issues/51)) ([d4ee776](https://github.com/Doist/react-compiler-tracker/commit/d4ee776a54348187192201528a378056f2213896))
+
 ## [2.3.0](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.2.0...react-compiler-tracker-v2.3.0) (2026-01-30)
 
 
