@@ -47,7 +47,13 @@ describe('CLI', () => {
 
             expect(output).toContain('Found 4 React Compiler issues')
             expect(output).toContain('Errors:')
-            expect(output).toMatch(/Line \d+:/)
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
+            )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
+            expect(output).toContain(
+                'src/bad-component.tsx: Line 9: Hooks must always be called in a consistent order',
+            )
         })
     })
 
@@ -85,8 +91,9 @@ describe('CLI', () => {
             expect(output).toContain('React Compiler errors have increased')
             expect(output).toContain('Errors:')
             expect(output).toContain(
-                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
             )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
         })
 
         it('--show-errors shows errors even when no increase', () => {
@@ -95,8 +102,9 @@ describe('CLI', () => {
 
             expect(output).toContain('Errors:')
             expect(output).toContain(
-                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
             )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
             expect(output).not.toContain('React Compiler errors have increased')
             expect(output).toContain('✅ No new React Compiler errors')
         })
@@ -131,7 +139,13 @@ describe('CLI', () => {
 
             expect(output).toContain('Records saved to')
             expect(output).toContain('Errors:')
-            expect(output).toMatch(/Line \d+:/)
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
+            )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
+            expect(output).toContain(
+                'src/bad-component.tsx: Line 9: Hooks must always be called in a consistent order',
+            )
         })
     })
 
@@ -162,7 +176,10 @@ describe('CLI', () => {
 
             expect(output).toContain('React Compiler errors have increased')
             expect(output).toContain('Errors:')
-            expect(output).toMatch(/Line \d+:/)
+            expect(output).toContain(
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
+            )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
         })
 
         it('--stage-record-file --show-errors shows errors even when no increase', () => {
@@ -171,8 +188,9 @@ describe('CLI', () => {
 
             expect(output).toContain('Errors:')
             expect(output).toContain(
-                'src/bad-hook.ts: Line 6: Cannot access refs during render (x3)',
+                'src/bad-hook.ts: Line 9: Cannot access refs during render (x2)',
             )
+            expect(output).toContain('src/bad-hook.ts: Line 10: Cannot access refs during render')
             expect(output).not.toContain('React Compiler errors have increased')
         })
 
