@@ -3,9 +3,9 @@
   "version": "2.3.1",
   "description": "A React Compiler violation tracker to help migrations and prevent regressions",
   "type": "module",
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "bin": {
-    "react-compiler-tracker": "dist/index.mjs"
+    "react-compiler-tracker": "dist/index.js"
   },
   "scripts": {
     "check": "run-p check:* -c -l",
@@ -44,7 +44,7 @@
     "CHANGELOG.md"
   ],
   "lint-staged": {
-    "*.{js,ts,mjs,mts,json,md}": "biome check --write --no-errors-on-unmatched"
+    "*.{js,ts,json,md}": "biome check --write --no-errors-on-unmatched"
   },
   "devDependencies": {
     "rimraf": "6.1.2",

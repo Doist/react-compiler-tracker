@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseArgs } from './args.mjs'
+import { parseArgs } from './args.js'
 
 describe('parseArgs', () => {
     it('parses --check-files with files', () => {

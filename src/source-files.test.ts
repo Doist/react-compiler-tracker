@@ -8,7 +8,7 @@ import {
     normalizeFilePaths,
     partitionByExistence,
     validateFilesExist,
-} from './source-files.mjs'
+} from './source-files.js'
 
 vi.mock('node:child_process', () => ({
     execSync: vi.fn(),

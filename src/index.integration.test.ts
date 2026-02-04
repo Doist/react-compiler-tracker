@@ -10,7 +10,7 @@ const recordsPath = join(fixtureDir, '.react-compiler.rec.json')
 const configPath = join(fixtureDir, '.react-compiler-tracker.config.json')
 
 function runCLI(args: string[] = [], cwd = fixtureDir): string {
-    const cliPath = join(__dirname, 'index.mts')
+    const cliPath = join(__dirname, 'index.ts')
     try {
         return execSync(`npx tsx ${cliPath} ${args.join(' ')} 2>&1`, {
             cwd,
