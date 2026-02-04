@@ -2,13 +2,13 @@
 
 import { join, relative } from 'node:path'
 import type { Logger as ReactCompilerLogger } from 'babel-plugin-react-compiler'
-import { parseArgs } from './args.mjs'
-import * as babel from './babel.mjs'
-import { loadConfig } from './config.mjs'
-import type { FileErrors } from './records-file.mjs'
-import * as recordsFile from './records-file.mjs'
-import * as sourceFiles from './source-files.mjs'
-import { pluralize } from './utils.mjs'
+import { parseArgs } from './args.js'
+import * as babel from './babel.js'
+import { loadConfig } from './config.js'
+import type { FileErrors } from './records-file.js'
+import * as recordsFile from './records-file.js'
+import * as sourceFiles from './source-files.js'
+import { pluralize } from './utils.js'
 
 const compilerErrors: Map<string, FileErrors> = new Map()
 

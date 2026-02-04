@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getErrorChanges, load, save } from './records-file.mjs'
+import { getErrorChanges, load, save } from './records-file.js'
 
 vi.mock('node:fs', () => ({
     existsSync: vi.fn(),
@@ -7,7 +7,7 @@ vi.mock('node:fs', () => ({
     writeFileSync: vi.fn(),
 }))
 
-vi.mock('./react-compiler.mjs', () => ({
+vi.mock('./react-compiler.js', () => ({
     getVersion: vi.fn(() => '1.0.0'),
 }))
 
