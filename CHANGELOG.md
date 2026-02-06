@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.2](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.1...react-compiler-tracker-v2.3.2) (2026-02-06)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @babel/core to v7.29.0 ([#58](https://github.com/Doist/react-compiler-tracker/issues/58)) ([3269d1a](https://github.com/Doist/react-compiler-tracker/commit/3269d1a3609292b88ec7bb6f317579fa3f849c62))
+
 ## [2.3.1](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.0...react-compiler-tracker-v2.3.1) (2026-01-30)
 
 
