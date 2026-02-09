@@ -67,7 +67,7 @@
     "@babel/core": "7.29.0",
     "@babel/preset-react": "7.28.5",
     "@babel/preset-typescript": "7.28.5",
-    "glob": "13.0.0",
+    "glob": "13.0.1",
     "minimatch": "10.1.1"
   }
 }
