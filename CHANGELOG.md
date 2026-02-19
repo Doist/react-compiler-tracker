@@ -2,6 +2,18 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.3](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.2...react-compiler-tracker-v2.3.3) (2026-02-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency glob to v13.0.1 ([#61](https://github.com/Doist/react-compiler-tracker/issues/61)) ([68fcd8a](https://github.com/Doist/react-compiler-tracker/commit/68fcd8a76fadc6ad8d697749826a522ce1ae1325))
+* **deps:** update dependency glob to v13.0.2 ([#67](https://github.com/Doist/react-compiler-tracker/issues/67)) ([e4f6f00](https://github.com/Doist/react-compiler-tracker/commit/e4f6f000b8273a9ad045a8e669de9e33da47ae8e))
+* **deps:** update dependency glob to v13.0.3 ([#69](https://github.com/Doist/react-compiler-tracker/issues/69)) ([db16e00](https://github.com/Doist/react-compiler-tracker/commit/db16e00728ca816069f5091ccca6c3fae27dbf87))
+* **deps:** update dependency minimatch to v10.1.2 ([#63](https://github.com/Doist/react-compiler-tracker/issues/63)) ([c105cbc](https://github.com/Doist/react-compiler-tracker/commit/c105cbc7ada476267a00cf3de2cbf46e5c34f335))
+* **deps:** update dependency minimatch to v10.2.0 ([#70](https://github.com/Doist/react-compiler-tracker/issues/70)) ([a530502](https://github.com/Doist/react-compiler-tracker/commit/a530502b4b9c3f2245c10625efcc618d84743e0a))
+* **deps:** update dependency minimatch to v10.2.1 [security] ([#72](https://github.com/Doist/react-compiler-tracker/issues/72)) ([44d10b4](https://github.com/Doist/react-compiler-tracker/commit/44d10b4a4f27d8d3b035cb4013010bf1650a1d08))
+
 ## [2.3.2](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.1...react-compiler-tracker-v2.3.2) (2026-02-06)
 
 
