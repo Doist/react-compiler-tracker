@@ -23,4 +23,4 @@ function parseArgs(argv: string[]): ParsedArgs {
     return { command, filePaths, showErrors }
 }
 
-export { parseArgs, type ParsedArgs }
+export { type ParsedArgs, parseArgs }
