@@ -122,4 +122,4 @@ function partitionByExistence(filePaths: string[]): { existing: string[]; delete
     return { existing, deleted }
 }
 
-export { getAll, normalizeFilePaths, filterByGlob, validateFilesExist, partitionByExistence }
+export { filterByGlob, getAll, normalizeFilePaths, partitionByExistence, validateFilesExist }

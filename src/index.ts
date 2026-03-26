@@ -417,7 +417,7 @@ function checkErrorChanges({
     if (showErrors) {
         const errorDetails = formatErrorDetails(filePaths)
         if (errorDetails) {
-            console.log('Errors:' + errorDetails)
+            console.log(`Errors:${errorDetails}`)
         }
     }
 
