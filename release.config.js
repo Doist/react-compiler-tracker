@@ -7,7 +7,6 @@ export default {
         ['@semantic-release/commit-analyzer', { preset: 'conventionalcommits' }],
         ['@semantic-release/release-notes-generator', { preset: 'conventionalcommits' }],
         '@semantic-release/changelog',
-        ['@semantic-release/exec', { prepareCmd: 'npx biome format --write CHANGELOG.md' }],
         '@semantic-release/npm',
         [
             '@semantic-release/git',
