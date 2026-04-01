@@ -5,6 +5,11 @@ function createConfig(logger: Logger): TransformOptions {
     return {
         presets: [['@babel/preset-react', { runtime: 'automatic' }], '@babel/preset-typescript'],
         plugins: [['babel-plugin-react-compiler', { logger }]],
+        // By default, babel will try to load babel.config.js from wherever
+        // react-compiler-tracker is being run
+        configFile: false,
+        // Same idea with .babelrc
+        babelrc: false,
     }
 }
 
