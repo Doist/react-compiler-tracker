@@ -12,8 +12,8 @@ export default {
             '@semantic-release/git',
             {
                 assets: ['CHANGELOG.md', 'package.json', 'package-lock.json'],
-                message:
-                    'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: semantic-release template syntax
+                message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
             },
         ],
         '@semantic-release/github',
