@@ -39,7 +39,7 @@
     "provenance": true
   },
   "engines": {
-    "node": "^20.0.0 || >=22.0.0"
+    "node": "^22.14.0 || >=24.10.0"
   },
   "files": [
     "dist",
