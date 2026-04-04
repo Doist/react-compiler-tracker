@@ -69,7 +69,7 @@ If your source files are in a different location (e.g., `app/` instead of `src/`
 Regenerates the entire records file by scanning all source files matching `sourceGlob`. Useful for initialization or picking up changes from skipped Git hooks.
 
 ```bash
-npx @doist/react-compiler-tracker --overwrite
+npm exec --no -- @doist/react-compiler-tracker --overwrite
 ```
 
 ### `--stage-record-file <file1> <file2> ...`
@@ -77,7 +77,7 @@ npx @doist/react-compiler-tracker --overwrite
 Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files. Reports when errors decrease, celebrating your progress. Deleted files are automatically removed from the records (no need to pass their paths).
 
 ```bash
-npx @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
+npm exec --no -- @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
 ```
 
 If no files are provided, exits cleanly with a success message.
@@ -87,7 +87,7 @@ If no files are provided, exits cleanly with a success message.
 Checks specific files without updating records. Exits with code 1 if checked files show increased error counts (or new errors), or if any provided file does not exist. Reports when errors decrease, celebrating your progress. Primarily for CI to ensure PRs don't introduce new compiler errors.
 
 ```bash
-npx @doist/react-compiler-tracker --check-files src/components/Button.tsx src/hooks/useData.ts
+npm exec --no -- @doist/react-compiler-tracker --check-files src/components/Button.tsx src/hooks/useData.ts
 ```
 
 ### No flags
@@ -95,7 +95,7 @@ npx @doist/react-compiler-tracker --check-files src/components/Button.tsx src/ho
 Checks all source files matching `sourceGlob` and reports the total error count. The records file is **not** updated in this mode.
 
 ```bash
-npx @doist/react-compiler-tracker
+npm exec --no -- @doist/react-compiler-tracker
 ```
 
 ### `--show-errors`
@@ -103,7 +103,7 @@ npx @doist/react-compiler-tracker
 Shows error information from the compiler including file path, line number, and error reason. Can be combined with any command. Errors are displayed for all checked files regardless of whether they increased.
 
 ```bash
-npx @doist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
+npm exec --no -- @doist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
 ```
 
 Example output when errors have increased:
@@ -133,7 +133,7 @@ In `package.json`:
 ```json
 {
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "npx @doist/react-compiler-tracker --stage-record-file"
+    "*.{js,jsx,ts,tsx}": "npm exec --no -- @doist/react-compiler-tracker --stage-record-file"
   }
 }
 ```
@@ -148,7 +148,7 @@ With lint-staged, the matched files are automatically passed as arguments to the
     # Get changed files in the PR
     FILES=$(git diff --name-only origin/main...HEAD -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
     if [ -n "$FILES" ]; then
-      npx @doist/react-compiler-tracker --check-files $FILES
+      npm exec --no -- @doist/react-compiler-tracker --check-files $FILES
     fi
 ```
 
@@ -160,7 +160,7 @@ With lint-staged, the matched files are automatically passed as arguments to the
 # (deleted files are auto-detected from records, no need to pass them)
 FILES=$(git diff --diff-filter=ACMR --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
 if [ -n "$FILES" ]; then
-  npx @doist/react-compiler-tracker --stage-record-file $FILES
+  npm exec --no -- @doist/react-compiler-tracker --stage-record-file $FILES
 fi
 ```
 
