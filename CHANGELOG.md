@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.4](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.3...react-compiler-tracker-v2.3.4) (2026-04-04)
+
+
+### Bug Fixes
+
+* **security:** replace npx with npm exec to prevent unintended remote package execution ([#106](https://github.com/Doist/react-compiler-tracker/issues/106)) ([f3d0900](https://github.com/Doist/react-compiler-tracker/commit/f3d090067cbba0bbf658fbe971e4a9a5980f9901))
+
 ## [2.3.3](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.2...react-compiler-tracker-v2.3.3) (2026-03-16)
 
 
