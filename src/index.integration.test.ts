@@ -12,7 +12,7 @@ const configPath = join(fixtureDir, '.react-compiler-tracker.config.json')
 function runCLI(args: string[] = [], cwd = fixtureDir): string {
     const cliPath = join(__dirname, 'index.ts')
     try {
-        return execSync(`npx tsx ${cliPath} ${args.join(' ')} 2>&1`, {
+        return execSync(`npm exec tsx -- ${cliPath} ${args.join(' ')} 2>&1`, {
             cwd,
             encoding: 'utf8',
             stdio: ['pipe', 'pipe', 'pipe'],
