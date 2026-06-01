@@ -64,9 +64,9 @@
     "babel-plugin-react-compiler": "^1.0.0"
   },
   "dependencies": {
-    "@babel/core": "7.29.0",
-    "@babel/preset-react": "7.28.5",
-    "@babel/preset-typescript": "7.28.5",
+    "@babel/core": "7.29.7",
+    "@babel/preset-react": "7.29.7",
+    "@babel/preset-typescript": "7.29.7",
     "glob": "13.0.6",
     "minimatch": "10.2.5"
   }
