@@ -54,7 +54,7 @@
     "@types/node": "25.9.1",
     "babel-plugin-react-compiler": "1.0.0",
     "husky": "9.1.7",
-    "lint-staged": "17.0.6",
+    "lint-staged": "17.0.7",
     "npm-run-all2": "8.0.4",
     "tsx": "4.22.3",
     "typescript": "6.0.3",
