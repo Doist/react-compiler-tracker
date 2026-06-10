@@ -2,6 +2,15 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.5](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.4...react-compiler-tracker-v2.3.5) (2026-06-10)
+
+
+### Bug Fixes
+
+* **deps:** update babel monorepo to v7.29.7 ([#137](https://github.com/Doist/react-compiler-tracker/issues/137)) ([46397e2](https://github.com/Doist/react-compiler-tracker/commit/46397e297646358838413afef00722d2a5f21985))
+* **deps:** update dependency minimatch to v10.2.5 ([#109](https://github.com/Doist/react-compiler-tracker/issues/109)) ([dc30434](https://github.com/Doist/react-compiler-tracker/commit/dc30434001fda84052c826de6d2b6953043193c7))
+* drop Node 20 support ([#143](https://github.com/Doist/react-compiler-tracker/issues/143)) ([13a0e11](https://github.com/Doist/react-compiler-tracker/commit/13a0e11a23668f84c0e6fcaecdbd338cda847a5c))
+
 ## [2.3.4](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.3...react-compiler-tracker-v2.3.4) (2026-04-04)
 
 
