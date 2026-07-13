@@ -1,14 +1,14 @@
-import { type TransformOptions, transformFileAsync } from '@babel/core'
+import { type InputOptions, transformFileAsync } from '@babel/core'
 import type { Logger } from 'babel-plugin-react-compiler'
 
-function createConfig(logger: Logger): TransformOptions {
+function createConfig(logger: Logger): InputOptions {
     return {
         presets: [['@babel/preset-react', { runtime: 'automatic' }], '@babel/preset-typescript'],
         plugins: [['babel-plugin-react-compiler', { logger }]],
     }
 }
 
-async function compileFileWithBabel(filePath: string, config: TransformOptions) {
+async function compileFileWithBabel(filePath: string, config: InputOptions) {
     try {
         await transformFileAsync(filePath, config)
     } catch {
