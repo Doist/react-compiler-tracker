@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [2.3.6](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.5...react-compiler-tracker-v2.3.6) (2026-07-15)
+
+
+### Bug Fixes
+
+* **deps:** update babel monorepo to v8 ([#154](https://github.com/Doist/react-compiler-tracker/issues/154)) ([a85d588](https://github.com/Doist/react-compiler-tracker/commit/a85d588bb24300311ccffef53390519580478228))
+
 ## [2.3.5](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.4...react-compiler-tracker-v2.3.5) (2026-06-10)
 
 
