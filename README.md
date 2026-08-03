@@ -13,7 +13,7 @@ Inspired by [esplint](https://github.com/hjylewis/esplint) and [react-compiler-m
 This tool compiles your source files with Babel and the React Compiler, using the ones installed in your project so that the violations it reports match the ones your own build produces. Install them if you don't have them already:
 
 ```bash
-npm install --save-dev babel-plugin-react-compiler @babel/core @babel/preset-react @babel/preset-typescript
+npm install --save-dev babel-plugin-react-compiler @babel/core@^7.26.0 @babel/preset-react@^7 @babel/preset-typescript@^7
 ```
 
 Babel 8 is not supported yet, as `babel-plugin-react-compiler` reports violations for valid code when running on it.
