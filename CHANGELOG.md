@@ -2,6 +2,17 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [3.0.0](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.6...react-compiler-tracker-v3.0.0) (2026-08-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* use the Babel installed in the consuming project ([#179](https://github.com/Doist/react-compiler-tracker/issues/179))
+
+### Bug Fixes
+
+* use the Babel installed in the consuming project ([#179](https://github.com/Doist/react-compiler-tracker/issues/179)) ([60def1c](https://github.com/Doist/react-compiler-tracker/commit/60def1cb831dbb8f23745af28fd50c773cfe81a6))
+
 ## [2.3.6](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v2.3.5...react-compiler-tracker-v2.3.6) (2026-07-15)
 
 
