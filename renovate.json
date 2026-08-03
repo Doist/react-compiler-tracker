@@ -1,5 +1,13 @@
 {
     "extends": ["github>doist/renovate-config:frontend-base"],
+    "packageRules": [
+        {
+            "description": "Held on Babel 7. Babel 8 drops AssignmentPattern, RestElement and TSParameterProperty from its LVal alias, and babel-plugin-react-compiler relies on that alias, so it reports violations for valid code such as destructured parameter defaults. Re-enable once the React Compiler supports Babel 8.",
+            "matchPackageNames": ["@babel/**"],
+            "matchUpdateTypes": ["major"],
+            "enabled": false
+        }
+    ],
     "schedule": ["before 7am every weekday"],
     "updateNotScheduled": false,
     "reviewers": ["team:frontend-product"],
