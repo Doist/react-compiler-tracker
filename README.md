@@ -37,10 +37,10 @@ Create a `.react-compiler-tracker.config.json` file in your project root to cust
 
 All fields are optional. Default values are shown above.
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `recordsFile` | Path to the records file | `.react-compiler.rec.json` |
-| `sourceGlob` | Glob pattern for source files | `src/**/*.{js,jsx,ts,tsx}` |
+| Option        | Description                   | Default                    |
+| ------------- | ----------------------------- | -------------------------- |
+| `recordsFile` | Path to the records file      | `.react-compiler.rec.json` |
+| `sourceGlob`  | Glob pattern for source files | `src/**/*.{js,jsx,ts,tsx}` |
 
 ### Monorepo Usage
 
@@ -134,9 +134,9 @@ In `package.json`:
 
 ```json
 {
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "npm exec --no -- @doist/react-compiler-tracker --stage-record-file"
-  }
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": "npm exec --no -- @doist/react-compiler-tracker --stage-record-file"
+    }
 }
 ```
 
@@ -147,11 +147,11 @@ With lint-staged, the matched files are automatically passed as arguments to the
 ```yaml
 - name: Check React Compiler violations
   run: |
-    # Get changed files in the PR
-    FILES=$(git diff --name-only origin/main...HEAD -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
-    if [ -n "$FILES" ]; then
-      npm exec --no -- @doist/react-compiler-tracker --check-files $FILES
-    fi
+      # Get changed files in the PR
+      FILES=$(git diff --name-only origin/main...HEAD -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
+      if [ -n "$FILES" ]; then
+        npm exec --no -- @doist/react-compiler-tracker --check-files $FILES
+      fi
 ```
 
 ### Pre-commit hook (manual)
