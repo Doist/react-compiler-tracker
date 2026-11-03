@@ -2,6 +2,13 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [3.0.3](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v3.0.2...react-compiler-tracker-v3.0.3) (2026-11-03)
+
+
+### Bug Fixes
+
+* **deps:** update dependency glob to v14 ([#224](https://github.com/Doist/react-compiler-tracker/issues/224)) ([bdd85f8](https://github.com/Doist/react-compiler-tracker/commit/bdd85f87787fd3fc84b2be5fdf3f1f9e9d1040c5))
+
 ## [3.0.2](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v3.0.1...react-compiler-tracker-v3.0.2) (2026-10-13)
 
 
