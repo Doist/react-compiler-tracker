@@ -102,9 +102,10 @@ published version: retain and reuse its original bytes.
 The pack workflow checks out the event SHA directly, validates the matching normal
 release tag and main ancestry, installs the real lock without lifecycles, checks,
 tests, builds, and packs once without lifecycles. It has no package-write/OIDC
-permissions. `release.json` records the source SHA/ref, version, filename, SHA-512
-integrity and SHA-1 checksum; it is evidence only in conjunction with the trusted
-run validation.
+permissions. `release.json` schema 1 records the source SHA/ref, run ID and original
+attempt, version, filename, SHA-512 integrity and SHA-1 checksum. The immutable
+artifact name includes the run/attempt. Its GitHub API ID and SHA-256 archive digest
+bind these metadata and package bytes to the original successful attempt.
 
 ```sh
 # Optional explicit pack-only retry, if no artifact/publication exists:
@@ -113,31 +114,51 @@ gh workflow run pack.yml --repo todoist/react-compiler-tracker --ref react-compi
 gh run list --repo todoist/react-compiler-tracker --workflow pack.yml --json databaseId,headSha,headBranch,conclusion,event --limit 10
 ```
 
-Choose the successful run for the reviewed release commit. Set `PACK_RUN_ID`,
-`RELEASE_SHA` to that full commit SHA, and `RELEASE_DIR` to an absolute dedicated
-artifact directory. Version 3.0.5 below remains subject to the release review.
-Run these commands from a reviewed main checkout containing the verification code:
+Choose the original successful attempt for the reviewed release commit. Set
+`PACK_RUN_ID`, `PACK_RUN_ATTEMPT`, `PACK_ARTIFACT_ID`, full `RELEASE_SHA` and an
+absolute empty `RELEASE_DIR`. Record the immutable artifact ID from the original
+upload, not a version-only name search. These read-only API queries help inspect
+that selection:
+
+```sh
+gh api "repos/todoist/react-compiler-tracker/actions/runs/$PACK_RUN_ID/attempts/$PACK_RUN_ATTEMPT"
+gh api "repos/todoist/react-compiler-tracker/actions/artifacts/$PACK_ARTIFACT_ID"
+```
+
+Version 3.0.5 remains subject to release review. From a reviewed checkout, export
+these selectors for download and every later local verify/bootstrap/publish call:
 
 ```sh
 VERSION=3.0.5
 RELEASE_TOOLS="$PWD/.github/scripts"
-SOURCE_OUTPUT=$(mktemp)
-GITHUB_REPOSITORY=todoist/react-compiler-tracker \
-  SOURCE_RUN_ID="$PACK_RUN_ID" RELEASE_VERSION="$VERSION" \
-  GITHUB_OUTPUT="$SOURCE_OUTPUT" node "$RELEASE_TOOLS/release-source.mjs" run
-cat "$SOURCE_OUTPUT"
-# Compare the printed sha to RELEASE_SHA; retain this output with the run evidence.
-gh run download "$PACK_RUN_ID" --repo todoist/react-compiler-tracker \
-  --name "react-compiler-tracker-$VERSION" --dir "$RELEASE_DIR"
+export SOURCE_RUN_ID="$PACK_RUN_ID" SOURCE_RUN_ATTEMPT="$PACK_RUN_ATTEMPT"
+export SOURCE_ARTIFACT_ID="$PACK_ARTIFACT_ID" RELEASE_VERSION="$VERSION"
+node "$RELEASE_TOOLS/release-source.mjs" download "$RELEASE_DIR"
+# Compare the printed source SHA to RELEASE_SHA and retain the source/run/artifact receipt.
 node "$RELEASE_TOOLS/release.mjs" verify "$RELEASE_DIR" "$RELEASE_SHA" "$VERSION"
 ```
 
-The publisher validates the repository, workflow ID/path, successful completed
-`workflow_dispatch` event, main/matching-tag ref, exact tag/run/checkout SHA and
-main ancestry before accepting an artifact. It rejects arbitrary PR runs and
-self-declared source metadata. Preserve the original archive, `release.json`, run
-URL, source SHA/ref and checksums in the release records before Actions' 90-day
-retention (or the organization's shorter cap) expires.
+The publisher queries **actions/runs/RUN_ID/attempts/N**, never the mutable
+latest-run endpoint. A later failed or skipped rerun does not invalidate the
+original successful attempt. It validates repository, historical workflow ID/path,
+event, main/matching-tag ref, tag/run/checkout SHA, main ancestry and artifact
+ID/run/SHA/name/creation window. It does not compare the historical workflow to
+current main's workflow bytes. Existing original-format artifacts remain accepted
+with their original name/schema and API-bound creation window.
+
+Download uses the exact artifact ID and retains **artifact.zip**. Its SHA-256 must
+match GitHub's authoritative API digest before any entries are read. Both
+`release.json` and the tarball must match those original ZIP entries byte for byte
+before every CLI verify/bootstrap/publish. Rewriting local metadata and matching
+local hashes cannot substitute different bytes. Supported schema is 1, plus the
+original unversioned format; unknown schemas stop for reviewed original-byte
+recovery, never repacking an immutable version.
+
+Back up the original ZIP, extracted files, run/attempt/artifact IDs, API digest and
+source evidence before the 90-day retention (or shorter organization cap) expires.
+The archive digest is distinct from the tarball integrity. See GitHub's
+[run-attempt API](https://docs.github.com/en/rest/actions/workflow-runs#get-a-workflow-run-attempt)
+and [artifact API](https://docs.github.com/en/rest/actions/artifacts#get-an-artifact).
 
 ## First interactive npm publication
 
@@ -191,7 +212,9 @@ missing GitHub destination, using the **original** pack run:
 
 ```sh
 gh workflow run publish.yml --repo todoist/react-compiler-tracker --ref main \
-  -f source_run_id="$PACK_RUN_ID" -f version="$VERSION" -f destination=github -f dist_tag=latest
+  -f source_run_id="$PACK_RUN_ID" -f source_run_attempt="$PACK_RUN_ATTEMPT" \
+  -f source_artifact_id="$PACK_ARTIFACT_ID" -f version="$VERSION" \
+  -f destination=github -f dist_tag=latest
 ```
 
 Future real releases, after npm trust is configured, use `destination=both` with
@@ -200,7 +223,7 @@ and rejects any conflicting copy, even for a single-destination retry. An existi
 version is skipped only when identical. Lookup failures other than
 E404 stop the workflow; a conflicting artifact also stops. A retry never bumps,
 rebuilds or creates release records. Retry only the missing destination with the
-same run/version. If recovery is older than an existing `latest`, use
+same original run/attempt/artifact ID/version. If recovery is older than an existing `latest`, use
 `-f dist_tag=recovery`; the default path refuses to downgrade `latest`. The
 publisher does not silently promote an existing version or repair existing tags.
 The package owner must inspect tags independently in both registries.
@@ -215,18 +238,25 @@ npm dist-tag rm @todoist/react-compiler-tracker recovery --registry=https://regi
 npm dist-tag rm @todoist/react-compiler-tracker recovery --registry=https://npm.pkg.github.com/
 ```
 
-If retention expires, restore the original tarball and `release.json` backup;
-repeat source-run/history verification and checksum checks. An authorized maintainer
-can use the interactive bootstrap helper with `recovery` as appropriate, or the same
-GitHub publisher helper locally with `NODE_AUTH_TOKEN` supplied through the existing
-secret flow (an appropriate authorized classic PAT locally):
+For a later failed/skipped rerun, use the same original attempt and artifact ID;
+no new pack is needed. If the archive download expires but GitHub still serves
+its artifact metadata/digest, restore **artifact.zip** and its two original entries
+from backup, retain the same exported selectors, and run the local verifier above.
+It checks the original successful attempt and API digest, not the latest run.
+Then an authorized maintainer may use the interactive bootstrap helper with
+`recovery`, or the GitHub helper with `NODE_AUTH_TOKEN` from the existing secure
+credential flow:
 
 ```sh
 node "$RELEASE_TOOLS/release.mjs" publish "$RELEASE_DIR" "$RELEASE_SHA" "$VERSION" github recovery
 ```
 
-Do not substitute a PR artifact or a new build. If the original bytes or trusted
-run evidence are unavailable, stop and route to the release owner.
+If the attempt or authoritative artifact metadata/digest is no longer available,
+automatic and local helpers stop. The release owner must independently recover
+and review the saved original run/upload evidence and original ZIP before an
+approved manual operation. A local self-consistent `release.json`, a repeated
+failed validation, or a replacement build is not recovery. Never repack, retag or
+replace an already-published version, and do not treat unavailable evidence as proof.
 
 Finally verify exact name/version/integrity, expected tags and a fresh consumer
 install **separately in both registries** using the actual consumer credentials and

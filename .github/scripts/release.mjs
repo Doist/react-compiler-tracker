@@ -5,6 +5,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { verifyOriginalArtifact } from './release-source.mjs'
 
 const packageName = '@todoist/react-compiler-tracker'
 const repository = 'https://github.com/todoist/react-compiler-tracker'
@@ -81,7 +82,7 @@ export function verify(directory, sourceSha, version, sourceRef) {
     return { ...release, tarball }
 }
 
-export function pack(directory, sourceSha, sourceRef) {
+export function pack(directory, sourceSha, sourceRef, origin) {
     const pkg = json('package.json')
     validatePackage(pkg, pkg.version)
     assert.match(sourceSha, /^[a-f0-9]{40}$/)
@@ -117,6 +118,9 @@ export function pack(directory, sourceSha, sourceRef) {
         ),
     )
     const release = {
+        ...(origin
+            ? { schemaVersion: 1, sourceRunId: origin.runId, sourceRunAttempt: origin.attempt }
+            : {}),
         name: pkg.name,
         version: pkg.version,
         sourceSha,
@@ -266,18 +270,23 @@ export function bootstrap(release, run, registry, tag = 'latest') {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     const [command, directory, sourceSha, versionOrRef, destination, tag] = process.argv.slice(2)
-    if (command === 'pack')
-        console.log(JSON.stringify(pack(directory, sourceSha, versionOrRef), null, 2))
-    else if (command === 'verify')
+    if (command === 'pack') {
+        const origin = { runId: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT }
+        for (const value of Object.values(origin)) assert.match(value, /^[1-9][0-9]*$/)
+        console.log(JSON.stringify(pack(directory, sourceSha, versionOrRef, origin), null, 2))
+    } else if (command === 'verify') {
+        verifyOriginalArtifact(directory, sourceSha, versionOrRef)
         console.log(
             JSON.stringify(verify(directory, sourceSha, versionOrRef, destination), null, 2),
         )
-    else if (command === 'bootstrap') {
+    } else if (command === 'bootstrap') {
         const release = verify(directory, sourceSha, versionOrRef)
+        verifyOriginalArtifact(directory, sourceSha, versionOrRef)
         preflightRegistries(release)
         withRegistry('npm', (run, registry) => bootstrap(release, run, registry, destination))
     } else if (command === 'publish') {
         const release = verify(directory, sourceSha, versionOrRef)
+        verifyOriginalArtifact(directory, sourceSha, versionOrRef)
         preflightRegistries(release)
         withRegistry(destination, (run, registry) =>
             publish(release, destination, run, registry, tag),

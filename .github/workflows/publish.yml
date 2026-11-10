@@ -7,6 +7,14 @@ on:
                 description: Successful pack.yml run containing the reviewed tarball
                 required: true
                 type: string
+            source_run_attempt:
+                description: Original successful pack attempt, even if a later rerun failed
+                required: true
+                type: string
+            source_artifact_id:
+                description: Immutable artifact ID from that original attempt
+                required: true
+                type: string
             version:
                 description: Exact stable version in the retained artifact (intended migration release 3.0.5)
                 required: true
@@ -37,6 +45,12 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         environment: package-release
+        env:
+            SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+            SOURCE_RUN_ATTEMPT: ${{ inputs.source_run_attempt }}
+            SOURCE_ARTIFACT_ID: ${{ inputs.source_artifact_id }}
+            RELEASE_VERSION: ${{ inputs.version }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         permissions:
             contents: read
             actions: read
@@ -50,19 +64,11 @@ jobs:
               with:
                   node-version-file: .node-version
             - run: npm install --global npm@11.21.2 --ignore-scripts
-            - name: Validate source run, exact tag commit and reviewed ancestry
+            - name: Validate original attempt and download its exact archive by ID and digest
               id: source
-              run: node .github/scripts/release-source.mjs run
+              run: node .github/scripts/release-source.mjs download "$RELEASE_DIR"
               env:
-                  SOURCE_RUN_ID: ${{ inputs.source_run_id }}
-                  RELEASE_VERSION: ${{ inputs.version }}
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - uses: actions/download-artifact@v4
-              with:
-                  name: react-compiler-tracker-${{ inputs.version }}
-                  path: ${{ runner.temp }}/react-compiler-tracker-release
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  run-id: ${{ inputs.source_run_id }}
+                  RELEASE_DIR: ${{ runner.temp }}/react-compiler-tracker-release
             - name: Verify artifact before publication
               env:
                   RELEASE_DIR: ${{ runner.temp }}/react-compiler-tracker-release
