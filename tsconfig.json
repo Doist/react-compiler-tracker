@@ -1,5 +1,5 @@
 {
-    "extends": "@doist/tsconfig",
+    "extends": "@todoist/tsconfig",
     "compilerOptions": {
         "target": "ES2022",
         "module": "NodeNext",

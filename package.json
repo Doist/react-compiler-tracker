@@ -1,5 +1,5 @@
 {
-  "name": "@doist/react-compiler-tracker",
+  "name": "@todoist/react-compiler-tracker",
   "version": "3.0.4",
   "description": "A React Compiler violation tracker to help migrations and prevent regressions",
   "type": "module",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Doist/react-compiler-tracker.git"
+    "url": "git+https://github.com/todoist/react-compiler-tracker.git"
   },
   "keywords": [
     "react",
@@ -31,9 +31,9 @@
   "author": "Doist Developers <dev@doist.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Doist/react-compiler-tracker/issues"
+    "url": "https://github.com/todoist/react-compiler-tracker/issues"
   },
-  "homepage": "https://github.com/Doist/react-compiler-tracker#readme",
+  "homepage": "https://github.com/todoist/react-compiler-tracker#readme",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -52,7 +52,7 @@
     "@babel/preset-react": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
     "@biomejs/biome": "2.6.4",
-    "@doist/tsconfig": "2.0.1",
+    "@todoist/tsconfig": "2.0.2",
     "@types/babel__core": "7.20.5",
     "@types/node": "26.6.6",
     "babel-plugin-react-compiler": "1.0.0",
