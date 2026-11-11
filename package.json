@@ -1,6 +1,6 @@
 {
   "name": "@todoist/react-compiler-tracker",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "A React Compiler violation tracker to help migrations and prevent regressions",
   "type": "module",
   "main": "dist/index.js",
