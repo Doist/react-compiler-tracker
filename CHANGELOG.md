@@ -2,6 +2,14 @@
 
 This file documents all notable changes, following the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [3.0.5](https://github.com/todoist/react-compiler-tracker/compare/react-compiler-tracker-v3.0.4...react-compiler-tracker-v3.0.5) (2026-11-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency minimatch to v11.0.4 ([#233](https://github.com/todoist/react-compiler-tracker/issues/233)) ([141261b](https://github.com/todoist/react-compiler-tracker/commit/141261ba0331dc26212f6e47c0d411ae961ca7c8))
+* **deps:** update dependency minimatch to v11.0.5 ([#239](https://github.com/todoist/react-compiler-tracker/issues/239)) ([7299c0a](https://github.com/todoist/react-compiler-tracker/commit/7299c0aaf2c021371b7d6b4b2080f3f49f8dbf3a))
+
 ## [3.0.4](https://github.com/Doist/react-compiler-tracker/compare/react-compiler-tracker-v3.0.3...react-compiler-tracker-v3.0.4) (2026-11-04)
 
 
