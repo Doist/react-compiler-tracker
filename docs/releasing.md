@@ -1,9 +1,8 @@
 # Releasing react-compiler-tracker
 
-Preparation status: **WAITING_FOR_PUBLICATION**. The migration draft changes the
-package name and build dependency, but deliberately retains the old dependency
-lock until `@todoist/tsconfig@2.0.2` exists. Do not merge with that mismatch.
-Local fixtures or source overlays do not establish registry readiness.
+The migration uses the published `@todoist/tsconfig@2.0.2` dependency. Its npm
+and private GitHub copies have matching SHA-512 integrity. The lockfile resolves
+the real npm tarball; local fixtures or source overlays are not release evidence.
 
 ## Version policy and merge gates
 
@@ -73,7 +72,7 @@ named-owner assignment source was not available during preparation.
 | npm first publication        | Authorized `todoist` maintainer, interactive login/2FA, public access; no placeholder or staged publication                                                                                                                                                                                                        |
 | Future npm trusted publisher | [Package access settings](https://www.npmjs.com/package/@todoist/react-compiler-tracker/access): GitHub owner `todoist`, repository `react-compiler-tracker`, workflow **publish.yml**, environment **package-release**, direct npm publish permission                                                             |
 | Caller                       | Direct `workflow_dispatch` of `publish.yml`; no reusable workflow. `release-please.yml` calls **pack.yml**, never the publisher                                                                                                                                                                                    |
-| Runner/runtime               | GitHub-hosted `ubuntu-latest`, Node `.node-version` (22.22), npm **11.21.2**, publication permissions `contents:read`, `actions:read`, `packages:write`, `id-token:write`                                                                                                                                          |
+| Runner/runtime               | GitHub-hosted `ubuntu-latest`, Node `.node-version` (22.23.4), npm **11.21.2**, publication permissions `contents:read`, `actions:read`, `packages:write`, `id-token:write`                                                                                                                                        |
 | GitHub mirror                | [Package settings](https://github.com/orgs/todoist/packages/npm/react-compiler-tracker/settings): retain **private** visibility independently of public npm visibility; linked repository `todoist/react-compiler-tracker`; publisher Write and only actual consumer repositories Read under Manage Actions access |
 
 The old mirror was verified **private**, version 3.0.4, linked to
@@ -162,7 +161,16 @@ and [artifact API](https://docs.github.com/en/rest/actions/artifacts#get-an-arti
 
 ## First interactive npm publication
 
-Use the exact retained tarball. Supply `NODE_AUTH_TOKEN` from the existing secure
+Use the exact retained tarball. Before any write the helper reads both registries.
+A missing GitHub version is accepted only after reading its package document and
+dist-tags. If the new scoped mirror itself is missing, the same token must prove
+active `todoist` organization-owner membership and a package REST 404. Ordinary
+repository-token 404s and filtered inventories are not absence evidence. A known
+REST package with unreadable registry metadata stops publication. The first new
+GitHub mirror is created with owner credentials; preserve its default private
+visibility. Subsequent workflow tokens must have package read/write access.
+
+Supply `NODE_AUTH_TOKEN` from the existing secure
 credential flow with Read access to the private GitHub mirror before running the
 bootstrap helper (an appropriate authorized classic PAT locally). The helper
 checks both registries before any write, including already-completed destinations;
@@ -207,8 +215,18 @@ automatic provenance behavior.
 
 ## Mirror, retry and future releases
 
-After the interactive npm copy is verified, the maintainer dispatches only the
-missing GitHub destination, using the **original** pack run:
+After the interactive npm copy is verified, create the first GitHub mirror locally
+with the same owner token used to prove absence and the **original** retained
+artifact. Its default visibility must remain private:
+
+```sh
+node "$RELEASE_TOOLS/release.mjs" publish "$RELEASE_DIR" "$RELEASE_SHA" "$VERSION" github latest
+```
+
+Once that mirror exists and its registry metadata is readable to the repository's
+workflow token, later missing-version retries may dispatch only that destination.
+Configure the protected environment before dispatch, and retain the original
+run/attempt/artifact selectors:
 
 ```sh
 gh workflow run publish.yml --repo todoist/react-compiler-tracker --ref main \

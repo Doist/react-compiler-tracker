@@ -169,7 +169,13 @@ export function withRegistry(destination, callback) {
 }
 
 export function registryMetadata(run, registry, spec, field = 'dist') {
-    const result = run(['view', spec, field, '--json', `--registry=${registry}`])
+    const result = run([
+        'view',
+        spec,
+        ...(field ? [field] : []),
+        '--json',
+        `--registry=${registry}`,
+    ])
     if (result.status === 0) return JSON.parse(result.stdout)
     // Authentication, networking and other failures must not be mistaken for absence.
     let error
@@ -180,6 +186,50 @@ export function registryMetadata(run, registry, spec, field = 'dist') {
     }
     if (error?.code === 'E404') return null
     throw new Error(`Registry lookup failed: ${result.stderr || result.error || result.stdout}`)
+}
+
+function githubApi(path) {
+    assert.ok(process.env.NODE_AUTH_TOKEN, 'GitHub package token is required')
+    const result = spawnSync('gh', ['api', path], {
+        encoding: 'utf8',
+        env: { ...process.env, GH_TOKEN: process.env.NODE_AUTH_TOKEN },
+    })
+    const value = JSON.parse(result.stdout)
+    if (result.status === 0) return value
+    if (value.status === '404') return null
+    throw new Error(`GitHub owner evidence failed: ${result.stderr}`)
+}
+
+export function verifyOwnerAbsence(readApi = githubApi) {
+    const membership = readApi('user/memberships/orgs/todoist')
+    assert.ok(
+        membership?.state === 'active' && membership.role === 'admin',
+        'An unreadable GitHub mirror requires an active organization owner; do not infer absence from 404',
+    )
+    assert.equal(
+        readApi('orgs/todoist/packages/npm/react-compiler-tracker'),
+        null,
+        'Known GitHub mirror is unreadable in the registry; restore package read access before publication',
+    )
+}
+
+export function githubVersionMetadata(run, registry, release, ownerEvidence = verifyOwnerAbsence) {
+    const document = registryMetadata(run, registry, release.name, null)
+    if (document === null) {
+        // A normal repository token can receive 404 for a hidden package. Only an owner
+        // with package access may establish first-mirror absence, using the same token.
+        ownerEvidence()
+        return null
+    }
+    assert.equal(document.name, release.name, 'Unexpected GitHub package document')
+    assert.ok(
+        document['dist-tags'] &&
+            typeof document['dist-tags'] === 'object' &&
+            !Array.isArray(document['dist-tags']) &&
+            Object.values(document['dist-tags']).every((version) => typeof version === 'string'),
+        'GitHub registry package metadata must be readable before interpreting version 404',
+    )
+    return registryMetadata(run, registry, `${release.name}@${release.version}`)
 }
 
 export function assertSameArtifact(dist, release) {
@@ -210,7 +260,9 @@ export function preflight(release, lookup) {
 function preflightRegistries(release) {
     preflight(release, (destination) =>
         withRegistry(destination, (run, registry) =>
-            registryMetadata(run, registry, `${release.name}@${release.version}`),
+            destination === 'github'
+                ? githubVersionMetadata(run, registry, release)
+                : registryMetadata(run, registry, `${release.name}@${release.version}`),
         ),
     )
 }

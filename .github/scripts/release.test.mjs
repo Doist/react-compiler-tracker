@@ -5,11 +5,13 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import {
     bootstrap,
+    githubVersionMetadata,
     pack,
     preflight,
     publish,
     registryMetadata,
     verify,
+    verifyOwnerAbsence,
     withRegistry,
 } from './release.mjs'
 
@@ -23,6 +25,46 @@ const release = {
 }
 const success = (value) => ({ status: 0, stdout: JSON.stringify(value) })
 const missing = { status: 1, stdout: JSON.stringify({ error: { code: 'E404' } }) }
+
+test('GitHub version absence requires readable registry metadata or verified owner absence', () => {
+    const document = { name: release.name, 'dist-tags': { latest: '3.0.4' } }
+    const results = [success(document), missing]
+    assert.equal(
+        githubVersionMetadata(() => results.shift(), registry, release),
+        null,
+    )
+    assert.throws(
+        () => githubVersionMetadata(() => success({ name: release.name }), registry, release),
+        /metadata must be readable/,
+    )
+    const hidden = () => verifyOwnerAbsence(() => ({ role: 'member', state: 'active' }))
+    assert.throws(
+        () => githubVersionMetadata(() => missing, registry, release, hidden),
+        /active organization owner/,
+    )
+    const paths = []
+    const owner = (path) => {
+        paths.push(path)
+        return path.startsWith('user/') ? { role: 'admin', state: 'active' } : null
+    }
+    assert.equal(
+        githubVersionMetadata(
+            () => missing,
+            registry,
+            release,
+            () => verifyOwnerAbsence(owner),
+        ),
+        null,
+    )
+    assert.deepEqual(paths, [
+        'user/memberships/orgs/todoist',
+        'orgs/todoist/packages/npm/react-compiler-tracker',
+    ])
+    assert.throws(
+        () => verifyOwnerAbsence((path) => owner(path) ?? { name: 'react-compiler-tracker' }),
+        /Known GitHub mirror is unreadable/,
+    )
+})
 
 test('an identical existing release is verified without publication', () => {
     const calls = []
