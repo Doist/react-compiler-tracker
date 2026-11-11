@@ -4,11 +4,11 @@ The following is a set of guidelines for contributing to react-compiler-tracker.
 
 ## Code of Conduct
 
-Doist has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) as its Code of Conduct, and we expect contributors to react-compiler-tracker to adhere to it. Please read [the full text](https://github.com/Doist/react-compiler-tracker/blob/main/CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
+Doist has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) as its Code of Conduct, and we expect contributors to react-compiler-tracker to adhere to it. Please read [the full text](https://github.com/todoist/react-compiler-tracker/blob/main/CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
 
 ## Open Development
 
-All work on react-compiler-tracker happens directly on [GitHub](https://github.com/Doist/react-compiler-tracker). Both core team members and external contributors send pull requests that go through the same review process.
+All work on react-compiler-tracker happens directly on [GitHub](https://github.com/todoist/react-compiler-tracker). Both core team members and external contributors send pull requests that go through the same review process.
 
 ## Semantic Versioning
 
@@ -18,11 +18,11 @@ Every significant change is documented in the [CHANGELOG.md](CHANGELOG.md) file.
 
 ## Branch Organization
 
-Submit all changes directly to the [main](https://github.com/Doist/react-compiler-tracker/tree/main) branch. We don't use separate branches for development or for upcoming releases. We do our best to keep `main` in good shape, with all tests passing.
+Submit all changes directly to the [main](https://github.com/todoist/react-compiler-tracker/tree/main) branch. We don't use separate branches for development or for upcoming releases. We do our best to keep `main` in good shape, with all tests passing.
 
 ## Proposing a Change
 
-If you intend to change the public API, or make any non-trivial changes to the implementation, we recommend opening a [GitHub Discussion](https://github.com/Doist/react-compiler-tracker/discussions) with the core team first. Although we welcome all contributions, this lets us reach an agreement on your proposal before you put significant effort into something that might not fit Doist product requirements.
+If you intend to change the public API, or make any non-trivial changes to the implementation, we recommend opening a [GitHub Discussion](https://github.com/todoist/react-compiler-tracker/discussions) with the core team first. Although we welcome all contributions, this lets us reach an agreement on your proposal before you put significant effort into something that might not fit Doist product requirements.
 
 ## Your First Pull Request
 
@@ -34,7 +34,7 @@ If you decide to fix an issue, please be sure to check the comment thread in cas
 ## Project Setup
 
 Before you can contribute to the codebase, you will need to fork the react-compiler-tracker repository, and the following steps will help you hit the ground running:
-1. Fork the repository (click the <kbd>Fork</kbd> button at the top right of [this page](https://github.com/Doist/react-compiler-tracker));
+1. Fork the repository (click the <kbd>Fork</kbd> button at the top right of [this page](https://github.com/todoist/react-compiler-tracker));
 
 2. Clone your fork locally;
 
@@ -48,7 +48,7 @@ cd react-compiler-tracker
 ## Development Workflow
 
 After cloning react-compiler-tracker and installing all dependencies, several commands are at your disposal:
--   `npm run build`: Builds the `@doist/react-compiler-tracker` package for publishing to [npm](https://www.npmjs.com/);
+-   `npm run build`: Builds the `@todoist/react-compiler-tracker` package for publishing to [npm](https://www.npmjs.com/);
 -   `npm run check`: Validates code quality and types with Biome and TypeScript;
 -   `npm run fix`: Automatically fixes linting issues with Biome;
 -   `npm run test`: Runs all unit tests with Vitest;
@@ -56,14 +56,14 @@ After cloning react-compiler-tracker and installing all dependencies, several co
 
 ### Release Process (core team only)
 
-The release process for react-compiler-tracker is automated with [release-please](https://github.com/googleapis/release-please). When commits following the [Conventional Commits](https://www.conventionalcommits.org/) specification are merged to `main`, release-please automatically creates or updates a release PR. When that PR is merged, a new version is published to npm.
+The release process for react-compiler-tracker is automated with [release-please](https://github.com/googleapis/release-please). When commits following the [Conventional Commits](https://www.conventionalcommits.org/) specification are merged to `main`, release-please automatically creates or updates a release PR. When that PR is merged, the normal version tag and GitHub release are created and a build/pack-only workflow retains the artifact. Publication is a separate, approved step using the [release runbook](docs/releasing.md).
 
 ## Sending a Pull Request
 
 Pull requests are actively monitored, and only need the approval of one or more core team members. We will review your pull request and either merge it, request changes to it, or close it with an explanation.
 
 Before submitting a pull request, please take the following into consideration:
--   Fork [the repository](https://github.com/Doist/react-compiler-tracker) and create your branch from `main`;
+-   Fork [the repository](https://github.com/todoist/react-compiler-tracker) and create your branch from `main`;
 -   Follow the [Commit Message Guidelines](#commit-message-guidelines) below;
 -   Add tests for code that should be tested (like bug fixes);
 -   Ensure the test suite passes with flying colours;

@@ -1,8 +1,8 @@
 # React Compiler Tracker
 
-[![npm version](https://img.shields.io/npm/v/@doist/react-compiler-tracker)](https://www.npmjs.com/package/@doist/react-compiler-tracker)
+[![npm version](https://img.shields.io/npm/v/@todoist/react-compiler-tracker)](https://www.npmjs.com/package/@todoist/react-compiler-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/node/v/@doist/react-compiler-tracker)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/node/v/@todoist/react-compiler-tracker)](https://nodejs.org/)
 
 The [React Compiler](https://react.dev/learn/react-compiler) automatically memoizes your components, eliminating the need for `useCallback` and `useMemo`. However, certain code patterns cause the compiler to bail out. When this happens, your components lose automatic optimization, potentially causing performance regressions.
 
@@ -21,7 +21,7 @@ Babel 8 is not supported yet, as `babel-plugin-react-compiler` reports violation
 ## Installation
 
 ```bash
-npm install --save-dev @doist/react-compiler-tracker
+npm install --save-dev @todoist/react-compiler-tracker
 ```
 
 ## Configuration
@@ -71,7 +71,7 @@ If your source files are in a different location (e.g., `app/` instead of `src/`
 Regenerates the entire records file by scanning all source files matching `sourceGlob`. Useful for initialization or picking up changes from skipped Git hooks.
 
 ```bash
-npm exec --no -- @doist/react-compiler-tracker --overwrite
+npm exec --no -- @todoist/react-compiler-tracker --overwrite
 ```
 
 ### `--stage-record-file <file1> <file2> ...`
@@ -79,7 +79,7 @@ npm exec --no -- @doist/react-compiler-tracker --overwrite
 Checks the provided files and updates the records. Exits with code 1 if errors increase (preventing the commit), otherwise updates the records file for the checked files. Reports when errors decrease, celebrating your progress. Deleted files are automatically removed from the records (no need to pass their paths).
 
 ```bash
-npm exec --no -- @doist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
+npm exec --no -- @todoist/react-compiler-tracker --stage-record-file src/components/Button.tsx src/hooks/useData.ts
 ```
 
 If no files are provided, exits cleanly with a success message.
@@ -89,7 +89,7 @@ If no files are provided, exits cleanly with a success message.
 Checks specific files without updating records. Exits with code 1 if checked files show increased error counts (or new errors), or if any provided file does not exist. Reports when errors decrease, celebrating your progress. Primarily for CI to ensure PRs don't introduce new compiler errors.
 
 ```bash
-npm exec --no -- @doist/react-compiler-tracker --check-files src/components/Button.tsx src/hooks/useData.ts
+npm exec --no -- @todoist/react-compiler-tracker --check-files src/components/Button.tsx src/hooks/useData.ts
 ```
 
 ### No flags
@@ -97,7 +97,7 @@ npm exec --no -- @doist/react-compiler-tracker --check-files src/components/Butt
 Checks all source files matching `sourceGlob` and reports the total error count. The records file is **not** updated in this mode.
 
 ```bash
-npm exec --no -- @doist/react-compiler-tracker
+npm exec --no -- @todoist/react-compiler-tracker
 ```
 
 ### `--show-errors`
@@ -105,7 +105,7 @@ npm exec --no -- @doist/react-compiler-tracker
 Shows error information from the compiler including file path, line number, and error reason. Can be combined with any command. Errors are displayed for all checked files regardless of whether they increased.
 
 ```bash
-npm exec --no -- @doist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
+npm exec --no -- @todoist/react-compiler-tracker --check-files --show-errors src/components/Button.tsx
 ```
 
 Example output when errors have increased:
@@ -135,7 +135,7 @@ In `package.json`:
 ```json
 {
     "lint-staged": {
-        "*.{js,jsx,ts,tsx}": "npm exec --no -- @doist/react-compiler-tracker --stage-record-file"
+        "*.{js,jsx,ts,tsx}": "npm exec --no -- @todoist/react-compiler-tracker --stage-record-file"
     }
 }
 ```
@@ -150,7 +150,7 @@ With lint-staged, the matched files are automatically passed as arguments to the
       # Get changed files in the PR
       FILES=$(git diff --name-only origin/main...HEAD -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
       if [ -n "$FILES" ]; then
-        npm exec --no -- @doist/react-compiler-tracker --check-files $FILES
+        npm exec --no -- @todoist/react-compiler-tracker --check-files $FILES
       fi
 ```
 
@@ -162,7 +162,7 @@ With lint-staged, the matched files are automatically passed as arguments to the
 # (deleted files are auto-detected from records, no need to pass them)
 FILES=$(git diff --diff-filter=ACMR --cached --name-only -- '*.tsx' '*.ts' '*.jsx' '*.js' | tr '\n' ' ')
 if [ -n "$FILES" ]; then
-  npm exec --no -- @doist/react-compiler-tracker --stage-record-file $FILES
+  npm exec --no -- @todoist/react-compiler-tracker --stage-record-file $FILES
 fi
 ```
 
@@ -170,7 +170,7 @@ fi
 
 This project uses [release-please](https://github.com/googleapis/release-please) to automate releases. Commits merged to `main` with `fix:` trigger patch releases, `feat:` triggers minor releases, and `feat!:` or `fix!:` triggers major releases.
 
-When commits land on `main`, release-please creates a release PR. Merging it publishes to npm and GitHub Packages.
+When commits land on `main`, release-please creates a release PR. Merging it creates the normal version tag and GitHub release, then builds and retains the release artifact. An authorized maintainer publishes that same artifact to npm and the private GitHub Packages mirror using the [release runbook](docs/releasing.md).
 
 ## License
 
